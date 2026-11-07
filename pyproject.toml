@@ -1,12 +1,17 @@
 [tool.uv.workspace]
-members = []
+members = ["packages/pris-msgs"]
+
+[tool.uv.sources]
+pris-msgs = { workspace = true }
 
 [dependency-groups]
 dev = [
+    "pris-msgs[numpy,opencv,turbojpeg]",
     "pytest==8.3.5",
     "flake8==7.2.0",
     "mypy==1.15.0",
-    "zensical==0.1.0",
+    "zensical==0.1.0; python_version >= '3.11'",
+    "grpcio-tools==1.85.1",
 ]
 
 [tool.pytest.ini_options]
@@ -15,6 +20,5 @@ testpaths = ["packages"]
 
 [tool.mypy]
 python_version = "3.12"
-explicit_package_bases = true
 ignore_missing_imports = true
 exclude = ['_pb2\.pyi?$']

@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pris-msgs"
+version = "1.0.0"
+description = "Schema and generated Python code for the PRIS messages"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "labvisio", email = "labvisio.ufes@gmail.com" }]
+maintainers = [{ name = "Luiz Carlos Cosmi Filho", email = "luizcarloscosmifilho@gmail.com" }]
+requires-python = ">=3.10"
+dependencies = [
+    "protobuf>=7.35.1,<8",
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+]
+
+[project.optional-dependencies]
+numpy = ["numpy>=1.26"]
+opencv = ["numpy>=1.26", "opencv-contrib-python-headless>=5,<6"]
+turbojpeg = ["PyTurboJPEG>=1.8.3,<2"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pris_msgs"]

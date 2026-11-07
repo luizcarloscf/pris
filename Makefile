@@ -2,10 +2,11 @@ DOCKER_USERNAME ?= luizcarloscf
 BROKER_NAME ?= rabbitmq
 BROKER_IMAGE ?= rabbitmq:4.3.6
 
-.PHONY: help sync test lint build clean broker-up broker-down docs-serve docs-build docs-image
+.PHONY: help sync proto test lint build clean broker-up broker-down docs-serve docs-build docs-image
 
 help:
 	@echo "sync         install every workspace package (editable) into .venv"
+	@echo "proto        regenerate the Python code (*_pb2.py/.pyi) of every package"
 	@echo "test         run the test suite (needs make broker-up)"
 	@echo "lint         flake8 + mypy"
 	@echo "build        build sdists and wheels into dist/"
@@ -17,6 +18,9 @@ help:
 
 sync:
 	uv sync --all-packages
+
+proto:
+	$(MAKE) -C packages/pris-msgs proto
 
 test:
 	@docker inspect -f '{{.State.Running}}' $(BROKER_NAME) 2>/dev/null | grep -q true \

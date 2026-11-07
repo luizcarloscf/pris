@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package pris.common;
+
+import "google/protobuf/wrappers.proto";
+
+option java_multiple_files = true;
+option java_package = "com.pris.common";
+
+message SamplingSettings {
+  // Sampling frequency in hertz.
+  google.protobuf.FloatValue frequency = 1;
+  /* Delay to be applied in the in the sampling proccess, normally used to
+     synchronize different sources. */
+  google.protobuf.FloatValue delay = 2;
+}
+
+message SyncRequest {
+  repeated string entities = 1;
+  SamplingSettings sampling = 2;
+}
+
+// Used to select the desired fields of a message on a "Get" RPC.
+message FieldSelector {
+  // List of fields that should be filled.
+  repeated uint32 fields = 1;
+}
+
+message Shape {
+  message Dimension {
+    // Number of elements in this dimension.
+    int32 size = 1;
+    /* Dimension identifier. This can be used to indicate the order that the dimensions are
+       placed in a tensor. For instance, in a tensor with two dimensions (matrix) the name can be
+       something like "row" or "column" indicating if the memory layout is row or column major. */
+    string name = 2;
+  }
+  repeated Dimension dims = 1;
+}
+
+enum DataType {
+  UNKNOWN_TYPE = 0;
+  FLOAT_TYPE = 1;
+  DOUBLE_TYPE = 2;
+  INT32_TYPE = 3;
+  INT64_TYPE = 4;
+}
+
+message Tensor {
+  /* Shape of the tensor. Define how the tensor is represented in one of the value
+     fields (floats, doubles, ints32, ints64). */
+  Shape shape = 1;
+  // Type of the tensor values.
+  DataType type = 2;
+
+  repeated float floats = 3 [packed = true];
+  repeated double doubles = 4 [packed = true];
+  repeated int32 ints32 = 5 [packed = true];
+  repeated int64 ints64 = 6 [packed = true];
+}
+
+message Position {
+  // Position in the x axis.
+  float x = 1;
+  // Position in the y axis.
+  float y = 2;
+  // Position in the z axis.
+  float z = 3;
+}
+
+/* Euler angles in radians, following ROS REP 103: the rotation is
+   Rz(yaw) * Ry(pitch) * Rx(roll), about fixed axes x, y, z (roll first, then pitch, then yaw). */
+message Orientation {
+  // Rotation around z (heading).
+  float yaw = 1;
+  // Rotation around y.
+  float pitch = 2;
+  // Rotation around x.
+  float roll = 3;
+}
+
+message Pose {
+  Position position = 1;
+  Orientation orientation = 2;
+}
+
+message Speed {
+  float linear = 1;
+  float angular = 2;
+}
+
+message ConsumerInfo {
+  // List of consumers.
+  repeated string consumers = 2;
+}
+
+message ConsumerList {
+  // Consumer Information for each topic.
+  map<string, ConsumerInfo> info = 1;
+}
+
+message Phrase {
+  // List of words.
+  repeated string content = 1;
+  // Confidence of recognized phrase.
+  float confidence = 2;
+  // Identifies language using Locale Name pattern.
+  string language = 3;
+}
