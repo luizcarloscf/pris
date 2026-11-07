@@ -6,6 +6,12 @@ Camera calibrations of each site, served by `pris-calibration-server`. One `pris
 |---|---|---|
 | `labvisio/` | LabVISIO | 0–3, FLIR Blackfly BFLY-PGE-09S2C-CS at 1288×728 |
 
-**Documentation:**
-* [pris-calibration-server](../docs/content/services/pris-calibration-server.md#calibration-files)
-* [Kubernetes](../docs/content/deployment/kubernetes.md#calibrations)
+## Kubernetes
+
+pris-calibration-server reads the calibrations of one site from the ConfigMap
+`pris-calibration-server-calibrations`. Create or update it from the repository root:
+
+```bash
+kubectl -n pris create configmap pris-calibration-server-calibrations \
+  --from-file=calibrations/labvisio/ --dry-run=client -o yaml | kubectl apply -f -
+```
