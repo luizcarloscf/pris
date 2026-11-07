@@ -8,8 +8,7 @@ Camera calibrations of each site, served by `pris-calibration-server`. One `pris
 
 ## Kubernetes
 
-pris-calibration-server reads the calibrations of one site from the ConfigMap
-`pris-calibration-server-calibrations`. Create or update it from the repository root:
+pris-calibration-server reads the calibrations of one site from the ConfigMap `pris-calibration-server-calibrations`. Create or update it from the repository root:
 
 ```bash
 kubectl -n pris create configmap pris-calibration-server-calibrations \

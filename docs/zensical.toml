@@ -6,6 +6,9 @@ site_dir = "site"
 extra_css = ["stylesheets/extra.css"]
 nav = [
   { "Home" = "index.md" },
+  { "Libraries" = [
+    { "pris-msgs" = "libraries/pris-msgs.md" },
+  ] },
   { "Project" = [
     { "Status" = "project/status.md" },
   ] },

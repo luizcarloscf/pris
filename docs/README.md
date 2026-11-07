@@ -1,7 +1,6 @@
 # Documentation
 
-The documentation site of PRIS, built with [Zensical](https://zensical.org). Pages are in
-[`content/`](content/), the navigation in [`zensical.toml`](zensical.toml).
+The documentation site of PRIS, built with [Zensical](https://zensical.org). Pages are in [`content/`](content/), the navigation in [`zensical.toml`](zensical.toml).
 
 From the repository root:
 

@@ -4,6 +4,7 @@ Python libraries, the services, and the ROS 2 packages that connect robots to it
 
 | Path | Contents |
 |---|---|
+| [`packages/pris-msgs/`](packages/pris-msgs/) | message schemas (`.proto`), their generated code, JSON load/save, NumPy helpers |
 | [`calibrations/`](calibrations/) | camera calibrations of each site |
 | [`docs/`](docs/) | the documentation site (Zensical) |
 
