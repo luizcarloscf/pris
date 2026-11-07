@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import functools
+from typing import cast
 
 try:
     import cv2
@@ -58,7 +59,7 @@ def to_array(
     )
     if pixels is None:
         raise ValueError("image data could not be decoded")
-    return pixels
+    return cast(npt.NDArray[np.uint8], pixels)
 
 
 def to_image(
