@@ -8,6 +8,7 @@ nav = [
   { "Home" = "index.md" },
   { "Libraries" = [
     { "pris-msgs" = "libraries/pris-msgs.md" },
+    { "pris-wire" = "libraries/pris-wire.md" },
   ] },
   { "Project" = [
     { "Status" = "project/status.md" },

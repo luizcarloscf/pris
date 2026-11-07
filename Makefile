@@ -21,6 +21,7 @@ sync:
 
 proto:
 	$(MAKE) -C packages/pris-msgs proto
+	$(MAKE) -C packages/pris-wire proto
 
 test:
 	@docker inspect -f '{{.State.Running}}' $(BROKER_NAME) 2>/dev/null | grep -q true \
