@@ -37,4 +37,4 @@ make test
 make lint
 ```
 
-`make proto` runs `make -C packages/pris-wire proto`, which compiles `wire.proto` with `pris_msgs.utils.build` and the protoc bundled in `grpcio-tools`. The tests connect to `WIRE_RABBITMQ_URI` (default `amqp://guest:guest@localhost:5672`). To test another Python version: `uv run --isolated --python 3.10 pytest packages/pris-wire`.
+`make proto` runs `make -C packages/pris-wire proto`, which compiles `wire.proto` with `pris_msgs.utils.build` and the protoc bundled in `grpcio-tools`. The tests use a real broker at `WIRE_RABBITMQ_URI` (default `amqp://guest:guest@localhost:5672`), each on a topic of its own. To test another Python version: `uv run --isolated --python 3.10 pytest packages/pris-wire`.

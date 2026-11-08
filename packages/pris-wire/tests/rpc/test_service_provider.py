@@ -1,4 +1,3 @@
-import os
 import socket
 import threading
 import time
@@ -7,10 +6,8 @@ import pytest
 from google.protobuf.struct_pb2 import Struct
 from google.protobuf.wrappers_pb2 import Int64Value
 
-from pris_wire.core import Channel, Message, Status, StatusCode, Subscription
+from pris_wire.core import Message, Status, StatusCode, Subscription
 from pris_wire.rpc import LogInterceptor, ServiceProvider
-
-URI = os.getenv('WIRE_RABBITMQ_URI', 'amqp://guest:guest@localhost:5672')
 
 
 def my_service(request, context):
@@ -23,11 +20,10 @@ def my_service(request, context):
     return reply
 
 
-def test_rpc():
-    channel = Channel(uri=URI)
+def test_rpc(channel, topic):
     service = ServiceProvider(channel)
     service.add_interceptor(LogInterceptor())
-    service.delegate("MyService", my_service, Struct, Int64Value)
+    service.delegate(topic, my_service, Struct, Int64Value)
 
     subscription = Subscription(channel)
 
@@ -37,7 +33,7 @@ def test_rpc():
         message = Message(struct)
         message.reply_to = subscription
         message.pack(struct)
-        channel.publish(topic="MyService", message=message)
+        channel.publish(topic=topic, message=message)
 
         request = channel.consume(timeout=1.0)
         assert request.body == message.body
@@ -59,13 +55,9 @@ def test_rpc():
     assert reply.status.ok() is False
     assert reply.status.code == StatusCode.INTERNAL_ERROR
 
-    channel.close()
 
-
-def test_serve():
-    channel = Channel(uri=URI)
+def test_serve(channel, topic):
     service = ServiceProvider(channel)
-    topic = "MyService"
     service.delegate(topic, my_service, Struct, Int64Value)
 
     subscription = Subscription(channel)
@@ -87,17 +79,15 @@ def test_serve():
     assert service.should_serve(recv) is True
     service.serve(recv)
 
-    channel.close()
 
-
-def test_burst_loses_nothing():
+def test_burst_loses_nothing(connect, topic):
     requests = 100
-    topic = "MyService.Burst"
     served = []
     ready, stop = threading.Event(), threading.Event()
 
+    channel = connect()
+
     def server():
-        channel = Channel(uri=URI)
         service = ServiceProvider(channel)
         service.delegate(topic, lambda request, context: served.append(1) or request,
                          Struct, Struct)
@@ -107,13 +97,12 @@ def test_burst_loses_nothing():
                 service.serve(channel.consume(timeout=0.1))
             except socket.timeout:
                 pass
-        channel.close()
 
     thread = threading.Thread(target=server, daemon=True)
     thread.start()
     assert ready.wait(timeout=5.0)
 
-    client = Channel(uri=URI)
+    client = connect()
     subscription = Subscription(client)
     pending = set()
     for _ in range(requests):
@@ -132,16 +121,13 @@ def test_burst_loses_nothing():
     finally:
         stop.set()
         thread.join(timeout=5.0)
-        client.close()
 
     assert len(served) == requests
     assert not pending
 
 
-def test_delegate():
-    channel = Channel(uri=URI)
+def test_delegate(channel, topic):
     service = ServiceProvider(channel)
-    service.delegate("MyService", my_service, Struct, Int64Value)
+    service.delegate(topic, my_service, Struct, Int64Value)
     with pytest.raises(RuntimeError):
-        service.delegate("MyService", my_service, Struct, Int64Value)
-    channel.close()
+        service.delegate(topic, my_service, Struct, Int64Value)

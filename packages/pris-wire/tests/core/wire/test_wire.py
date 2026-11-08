@@ -31,3 +31,13 @@ def test_amqp_round_trip():
 def test_proto_is_packaged():
     assert resources.files("pris_wire.core.wire").joinpath("wire.proto").is_file()
     assert wire_pb2.DESCRIPTOR.name == "wire.proto"
+
+
+def test_received_messages_carry_their_delivery_tag():
+    amqp_message = amqp.Message(channel=None, body=b"")
+    amqp_message.delivery_info = {"routing_key": "topic", "consumer_tag": "tag",
+                                  "delivery_tag": 42}
+    assert WireV1.from_amqp_message(amqp_message).delivery_tag == 42
+    del amqp_message.delivery_info["delivery_tag"]
+    assert not WireV1.from_amqp_message(amqp_message).has_delivery_tag()
+    assert not Message().has_delivery_tag()

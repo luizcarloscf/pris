@@ -1,111 +1,114 @@
-from types import SimpleNamespace
+import time
 
+import amqp
 import pytest
-from pris_wire.core import Channel, Message, Subscription
-from pris_wire.core.wire.conversion import WireV1
+from pris_wire.core import Message, Subscription
 
 
-class RecordingAmqpChannel:
-
-    def __init__(self):
-        self.declared = []
-        self.consumers = []
-        self.calls = []
-
-    def queue_declare(self, **kwargs):
-        self.declared.append(kwargs)
-
-    def queue_bind(self, **kwargs):
-        pass
-
-    def basic_consume(self, **kwargs):
-        self.consumers.append(kwargs)
-        self.calls.append(("consume", kwargs["consumer_tag"]))
-
-    def basic_qos(self, **kwargs):
-        self.calls.append(("qos", kwargs["prefetch_count"]))
-
-    def basic_ack(self, **kwargs):
-        self.calls.append(("ack", kwargs))
-
-    def basic_reject(self, **kwargs):
-        self.calls.append(("reject", kwargs))
+def bodies(messages):
+    return [message.body for message in messages]
 
 
-def make_channel():
-    return SimpleNamespace(_channel=RecordingAmqpChannel(), _exchange="pris",
-                           _on_message=lambda message: None, _prefetch=0)
-
-
-def test_private_queue_is_exclusive():
-    channel = make_channel()
+def test_private_queue_is_exclusive(channel, connect):
     subscription = Subscription(channel)
 
-    (declared,) = channel._channel.declared
-    assert declared["queue"] == subscription.name
-    assert declared["exclusive"] is True
-    assert declared["durable"] is False
-    assert declared["auto_delete"] is True
+    with pytest.raises(amqp.exceptions.ResourceLocked):
+        connect()._channel.queue_declare(queue=subscription.name, passive=True)
 
 
-def test_named_queue_is_durable_and_shareable():
-    channel = make_channel()
-    Subscription(channel, name="CameraGateway.0.GetConfig")
+def test_named_queue_is_durable(channel, connect, topic):
+    Subscription(channel, name=topic)
 
-    (declared,) = channel._channel.declared
-    assert declared["queue"] == "CameraGateway.0.GetConfig"
-    assert declared["exclusive"] is False
-    assert declared["durable"] is True
-    assert declared["auto_delete"] is True
-    (consumer,) = channel._channel.consumers
-    assert consumer["exclusive"] is False
+    with pytest.raises(amqp.exceptions.PreconditionFailed):
+        connect()._channel.queue_declare(queue=topic, durable=False, auto_delete=True)
 
 
-def test_defaults_are_unchanged():
-    channel = make_channel()
-    subscription = Subscription(channel)
+def test_messages_are_acknowledged_by_default(connect, topic):
+    first, second = connect(), connect()
+    subscription = Subscription(first, name=topic)
+    first.publish(Message(content=b"job"), topic=topic)
+    assert first.consume(timeout=1.0).body == b"job"
+    Subscription(second, name=topic)
 
-    (declared,) = channel._channel.declared
-    assert declared["arguments"] == {}
-    (consumer,) = channel._channel.consumers
-    assert consumer["no_ack"] is True
+    first.close()
+
     assert subscription.manual_ack is False
-    assert [call for call in channel._channel.calls if call[0] == "qos"] == []
+    assert second.consume_for(0.3) is None
 
 
-def test_queue_arguments_reach_the_broker():
-    channel = make_channel()
-    arguments = {"x-max-length": 1, "x-overflow": "drop-head"}
-    Subscription(channel, name="bridge.robot1.tf.latest", arguments=arguments)
+def test_a_max_length_of_one_keeps_only_the_newest(channel, connect, topic):
+    subscription = Subscription(channel, arguments={"x-max-length": 1, "x-overflow": "drop-head"},
+                                prefetch=1, manual_ack=True)
+    subscription.subscribe(topic)
+    publisher = connect()
+    for n in range(5):
+        publisher.publish(Message(content=str(n).encode()), topic=topic)
 
-    (declared,) = channel._channel.declared
-    assert declared["arguments"] == arguments
-    assert declared["arguments"] is not arguments
+    first = channel.consume(timeout=1.0)
+    time.sleep(0.2)
+    channel.ack(first)
+    newest = channel.consume(timeout=1.0)
+    channel.ack(newest)
 
-
-def test_manual_ack_and_prefetch():
-    channel = make_channel()
-    subscription = Subscription(channel, name="work", prefetch=2, manual_ack=True)
-
-    assert subscription.manual_ack is True
-    (consumer,) = channel._channel.consumers
-    assert consumer["no_ack"] is False
-    assert channel._channel.calls == [("qos", 2), ("consume", subscription.id)]
+    assert (first.body, newest.body) == (b"0", b"4")
+    assert channel.consume_for(0.2) is None
 
 
-def test_prefetch_is_set_back_for_the_next_consumers():
-    channel = make_channel()
-    first = Subscription(channel, prefetch=1, manual_ack=True)
-    second = Subscription(channel, prefetch=1, manual_ack=True)
-    third = Subscription(channel)
-    fourth = Subscription(channel)
+def test_manual_ack_redelivers_until_acknowledged(channel, topic):
+    subscription = Subscription(channel, name=topic, prefetch=1, manual_ack=True)
+    channel.publish(Message(content=b"job"), topic=topic)
 
-    assert channel._channel.calls == [
-        ("qos", 1), ("consume", first.id),
-        ("consume", second.id),
-        ("qos", 0), ("consume", third.id),
-        ("consume", fourth.id),
-    ]
+    message = channel.consume(timeout=1.0)
+    assert message.body == b"job" and message.has_delivery_tag()
+    channel.reject(message, requeue=True)
+    again = channel.consume(timeout=1.0)
+    assert again.body == b"job"
+    channel.ack(again)
+
+    assert channel.consume_for(0.3) is None
+    assert subscription.manual_ack
+
+
+def test_reject_drops_the_message(channel, topic):
+    Subscription(channel, name=topic, prefetch=1, manual_ack=True)
+    channel.publish(Message(content=b"job"), topic=topic)
+
+    channel.reject(channel.consume(timeout=1.0))
+
+    assert channel.consume_for(0.3) is None
+    with pytest.raises(ValueError, match="no delivery tag"):
+        channel.ack(Message())
+
+
+def test_prefetch_one_spreads_work_between_consumers(connect, topic):
+    busy, idle, publisher = connect(), connect(), connect()
+    Subscription(busy, name=topic, prefetch=1, manual_ack=True)
+    Subscription(idle, name=topic, prefetch=1, manual_ack=True)
+    for n in range(4):
+        publisher.publish(Message(content=str(n).encode()), topic=topic)
+
+    held = busy.consume(timeout=1.0)
+    handled = []
+    for _ in range(3):
+        message = idle.consume(timeout=1.0)
+        handled.append(message.body)
+        idle.ack(message)
+
+    assert busy.consume_for(0.2) is None
+    assert sorted([held.body] + handled) == [b"0", b"1", b"2", b"3"]
+
+
+def test_a_different_prefetch_does_not_leak_to_later_subscriptions(channel, topic):
+    limited = Subscription(channel, name=topic, prefetch=1, manual_ack=True)
+    plain = Subscription(channel)
+    for n in range(3):
+        channel.publish(Message(content=str(n).encode()), topic=plain.name)
+
+    received = [channel.consume(timeout=1.0) for _ in range(3)]
+
+    assert bodies(received) == [b"0", b"1", b"2"]
+    assert all(m.subscription_id == plain.id for m in received)
+    assert limited.manual_ack and not plain.manual_ack
 
 
 @pytest.mark.parametrize("kwargs, match", [
@@ -113,34 +116,6 @@ def test_prefetch_is_set_back_for_the_next_consumers():
     ({"prefetch": 0, "manual_ack": True}, "positive"),
     ({"prefetch": 1.5, "manual_ack": True}, "positive"),
 ])
-def test_invalid_prefetch(kwargs, match):
+def test_invalid_prefetch(channel, kwargs, match):
     with pytest.raises(ValueError, match=match):
-        Subscription(make_channel(), **kwargs)
-
-
-def test_received_messages_carry_their_delivery_tag():
-    amqp_message = SimpleNamespace(body=b"", properties={}, delivery_info={
-        "routing_key": "topic", "consumer_tag": "tag", "delivery_tag": 42})
-    assert WireV1.from_amqp_message(amqp_message).delivery_tag == 42
-    del amqp_message.delivery_info["delivery_tag"]
-    assert not WireV1.from_amqp_message(amqp_message).has_delivery_tag()
-    assert not Message().has_delivery_tag()
-
-
-def test_ack_and_reject():
-    channel = Channel.__new__(Channel)
-    channel._channel = RecordingAmqpChannel()
-    message = Message()
-    message.delivery_tag = 7
-
-    channel.ack(message)
-    channel.reject(message)
-    channel.reject(message, requeue=True)
-
-    assert channel._channel.calls == [
-        ("ack", {"delivery_tag": 7}),
-        ("reject", {"delivery_tag": 7, "requeue": False}),
-        ("reject", {"delivery_tag": 7, "requeue": True}),
-    ]
-    with pytest.raises(ValueError, match="no delivery tag"):
-        channel.ack(Message())
+        Subscription(channel, **kwargs)
