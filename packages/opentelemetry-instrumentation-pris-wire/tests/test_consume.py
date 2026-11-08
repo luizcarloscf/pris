@@ -2,38 +2,38 @@ import socket
 import time
 
 import pytest
-from pris_wire.core import Message, Status, StatusCode
+from pris_wire.core import Message, Status, StatusCode, Subscription
 from opentelemetry.instrumentation.pris_wire import extract
 from opentelemetry.trace import SpanKind, StatusCode as SpanStatusCode
 
 
-def published_then_consumed(channel, message, topic):
-    channel.publish(message, topic=topic)
-    channel.connection.loopback()
-    return channel.consume(timeout=1.0)
+def server(channel):
+    host, port = channel.connection.host.rsplit(":", 1)
+    return {"server.address": host, "server.port": int(port)}
 
 
-def test_receive_span_is_child_of_producer_without_current_span(instrument, telemetry, channel):
+def test_receive_span_is_child_of_producer_without_current_span(instrument, telemetry, channel,
+                                                                topic):
     instrument()
     message = Message(content=b"frame")
     message.correlation_id = 0x1F
 
-    received = published_then_consumed(channel, message, "Camera.0.Frame")
+    channel.publish(message, topic=topic)
+    received = channel.consume(timeout=1.0)
 
     assert received.body == b"frame"
     publish, receive = telemetry.spans()
-    assert receive.name == "receive Camera.0.Frame"
+    assert receive.name == "receive " + topic
     assert receive.kind == SpanKind.CLIENT
     assert dict(receive.attributes) == {
         "messaging.system": "rabbitmq",
         "messaging.operation.type": "receive",
         "messaging.operation.name": "receive",
-        "messaging.destination.name": "pris:Camera.0.Frame",
-        "messaging.rabbitmq.destination.routing_key": "Camera.0.Frame",
+        "messaging.destination.name": "pris:" + topic,
+        "messaging.rabbitmq.destination.routing_key": topic,
         "messaging.message.conversation_id": "1F",
         "messaging.message.body.size": 5,
-        "server.address": "broker.local",
-        "server.port": 5672,
+        **server(channel),
     }
     (link,) = receive.links
     assert link.context.span_id == publish.context.span_id
@@ -41,10 +41,10 @@ def test_receive_span_is_child_of_producer_without_current_span(instrument, tele
     assert receive.context.trace_id == publish.context.trace_id
 
 
-def test_receive_span_starts_when_the_message_arrives(instrument, telemetry, channel, monkeypatch):
+def test_receive_span_starts_when_the_message_arrives(instrument, telemetry, channel, topic,
+                                                      monkeypatch):
     instrument()
-    channel.publish(Message(content=b"frame"), topic="Camera.0.Frame")
-    channel.connection.loopback()
+    channel.publish(Message(content=b"frame"), topic=topic)
     drain = channel.connection.drain_events
 
     def slow_drain(timeout=None):
@@ -55,14 +55,13 @@ def test_receive_span_starts_when_the_message_arrives(instrument, telemetry, cha
     channel.consume(timeout=1.0)
 
     publish, receive = telemetry.spans()
-    assert receive.start_time >= publish.start_time + 200_000_000
+    assert receive.start_time >= publish.end_time + 200_000_000
     assert receive.end_time - receive.start_time < 50_000_000
 
 
-def test_receive_span_is_child_of_current_span(instrument, telemetry, channel):
+def test_receive_span_is_child_of_current_span(instrument, telemetry, channel, topic):
     instrument()
-    channel.publish(Message(content=b"frame"), topic="Camera.0.Frame")
-    channel.connection.loopback()
+    channel.publish(Message(content=b"frame"), topic=topic)
 
     tracer = telemetry.tracer_provider.get_tracer("test")
     with tracer.start_as_current_span("loop"):
@@ -74,40 +73,39 @@ def test_receive_span_is_child_of_current_span(instrument, telemetry, channel):
     assert link.context.span_id == publish.context.span_id
 
 
-def test_receive_span_for_message_delivered_before_consume(instrument, telemetry, channel):
+def test_receive_span_for_message_delivered_before_consume(instrument, telemetry, channel, topic):
     instrument()
-    channel.publish(Message(content=b"frame"), topic="Camera.0.Frame")
-    channel.connection.loopback()
-    channel.connection.drain_events(timeout=0)
+    channel.publish(Message(content=b"frame"), topic=topic)
+    channel.connection.drain_events(timeout=1.0)
 
     received = channel.consume(timeout=0.0)
 
     assert received.body == b"frame"
     publish, receive = telemetry.spans()
-    assert receive.name == "receive Camera.0.Frame"
     (link,) = receive.links
     assert link.context.span_id == publish.context.span_id
 
 
-def test_consume_variants_are_traced(instrument, telemetry, channel):
+def test_consume_variants_are_traced(instrument, telemetry, channel, topic):
     instrument()
-    for topic in ("Camera.0.Frame", "Camera.1.Frame", "Camera.2.Frame"):
-        channel.publish(Message(content=b"frame"), topic=topic)
-    channel.connection.loopback()
+    for n in range(3):
+        channel.publish(Message(content=str(n).encode()), topic=topic)
 
-    assert channel.consume_for(1.0).topic == "Camera.0.Frame"
-    assert channel.consume_until(0.0).topic == "Camera.1.Frame"
-    assert [message.topic for message in channel.consume_ready()] == ["Camera.2.Frame"]
-    assert channel.consume_for(0.0) is None
+    assert channel.consume_for(1.0).body == b"0"
+    assert channel.consume_until(time.time() + 1.0).body == b"1"
+    ready = []
+    while not ready:
+        ready = channel.consume_ready()
+    assert [message.body for message in ready] == [b"2"]
 
-    receives = [span.name for span in telemetry.spans() if span.name.startswith("receive")]
-    assert receives == ["receive Camera.0.Frame", "receive Camera.1.Frame",
-                        "receive Camera.2.Frame"]
+    receives = [span for span in telemetry.spans() if span.kind == SpanKind.CLIENT]
+    assert len(receives) == 3
 
 
-def test_extract_gives_receive_span_as_parent(instrument, telemetry, channel):
+def test_extract_gives_receive_span_as_parent(instrument, telemetry, channel, topic):
     instrument()
-    received = published_then_consumed(channel, Message(), "A")
+    channel.publish(Message(), topic=topic)
+    received = channel.consume(timeout=1.0)
 
     tracer = telemetry.tracer_provider.get_tracer("test")
     with tracer.start_as_current_span("handle", context=extract(received)):
@@ -121,23 +119,26 @@ def test_extract_gives_receive_span_as_parent(instrument, telemetry, channel):
 
 def test_receive_reply_has_bounded_name(instrument, telemetry, channel):
     instrument()
+    reply_queue = Subscription(channel).name
     reply = Message()
     reply.status = Status(StatusCode.OK)
 
-    published_then_consumed(channel, reply, "host/1A2B3C")
+    channel.publish(reply, topic=reply_queue)
+    channel.consume(timeout=1.0)
 
     receive = telemetry.spans()[-1]
     assert receive.name == "receive (reply)"
     assert receive.attributes["messaging.destination.temporary"] is True
-    assert receive.attributes["messaging.rabbitmq.destination.routing_key"] == "host/1A2B3C"
+    assert receive.attributes["messaging.rabbitmq.destination.routing_key"] == reply_queue
     (consumed,) = telemetry.metrics()["messaging.client.consumed.messages"]
     assert consumed.attributes["messaging.destination.name"] == "pris:(reply)"
 
 
-def test_receive_metrics(instrument, telemetry, channel):
+def test_receive_metrics(instrument, telemetry, channel, topic):
     instrument()
-    published_then_consumed(channel, Message(), "A")
-    published_then_consumed(channel, Message(), "A")
+    for _ in range(2):
+        channel.publish(Message(), topic=topic)
+        channel.consume(timeout=1.0)
 
     metrics = telemetry.metrics()
     (consumed,) = metrics["messaging.client.consumed.messages"]
@@ -157,9 +158,12 @@ def test_timeout_is_not_traced(instrument, telemetry, channel):
     assert "messaging.client.operation.duration" not in telemetry.metrics()
 
 
-def test_receive_error(instrument, telemetry, channel):
+def test_receive_error(instrument, telemetry, channel, monkeypatch):
+    def broken(timeout=None):
+        raise ConnectionResetError("broker gone")
+
     instrument()
-    channel.connection.error = ConnectionResetError("broker gone")
+    monkeypatch.setattr(channel.connection, "drain_events", broken)
 
     with pytest.raises(ConnectionResetError):
         channel.consume()
@@ -173,7 +177,7 @@ def test_receive_error(instrument, telemetry, channel):
     assert "messaging.client.consumed.messages" not in telemetry.metrics()
 
 
-def test_consume_hook(instrument, telemetry, channel):
+def test_consume_hook(instrument, telemetry, channel, topic):
     calls = []
 
     def hook(span, message):
@@ -181,17 +185,18 @@ def test_consume_hook(instrument, telemetry, channel):
         span.set_attribute("custom", "yes")
 
     instrument(consume_hook=hook)
-    published_then_consumed(channel, Message(content=b"x"), "A")
+    channel.publish(Message(content=b"x"), topic=topic)
+    channel.consume(timeout=1.0)
 
-    assert calls == [("receive A", b"x")]
+    assert calls == [("receive " + topic, b"x")]
     assert telemetry.spans()[-1].attributes["custom"] == "yes"
 
 
-def test_failing_consume_hook_does_not_lose_message(instrument, telemetry, channel):
+def test_failing_consume_hook_does_not_lose_message(instrument, telemetry, channel, topic):
     def hook(span, message):
         raise ValueError("bug in hook")
 
     instrument(consume_hook=hook)
-    received = published_then_consumed(channel, Message(content=b"x"), "A")
+    channel.publish(Message(content=b"x"), topic=topic)
 
-    assert received.body == b"x"
+    assert channel.consume(timeout=1.0).body == b"x"

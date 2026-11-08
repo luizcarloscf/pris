@@ -1,3 +1,5 @@
+import threading
+
 import pytest
 from google.protobuf.struct_pb2 import Struct
 from pris_wire.core import Message, Status, StatusCode, Subscription, now
@@ -12,10 +14,8 @@ def call(channel, provider, topic="Echo.Run", timeout=None):
     if timeout is not None:
         request.timeout = timeout
     channel.publish(request, topic=topic)
-    channel.connection.loopback()
-    provider.serve(channel.consume())
-    channel.connection.loopback()
-    return channel.consume(timeout=0.0)
+    provider.serve(channel.consume(timeout=1.0))
+    return channel.consume(timeout=1.0)
 
 
 @pytest.fixture
@@ -103,9 +103,8 @@ def test_deadline_exceeded(instrument, telemetry, channel, provider):
     request.timeout = 0.5
     request.created_at = now() - 10.0
     channel.publish(request, topic="Echo.Run")
-    channel.connection.loopback()
 
-    provider.serve(channel.consume())
+    provider.serve(channel.consume(timeout=1.0))
 
     server = next(s for s in telemetry.spans() if s.kind == SpanKind.SERVER)
     assert server.attributes["rpc.response.status_code"] == "DEADLINE_EXCEEDED"
@@ -160,3 +159,40 @@ def test_uninstrumented_provider_keeps_working(instrument, telemetry, channel, p
 
     assert reply.status.code == StatusCode.OK
     assert len(telemetry.spans()) == count
+
+
+def test_rpc_across_channels(instrument, telemetry, connect, topic):
+    instrument()
+    server_channel, client = connect(), connect()
+    provider = ServiceProvider(server_channel)
+    provider.delegate(topic, lambda request, context: request, Struct, Struct)
+    server = threading.Thread(
+        target=lambda: provider.serve(server_channel.consume(timeout=5.0)), daemon=True)
+    server.start()
+
+    replies = Subscription(client)
+    request = Struct()
+    request.update({"value": 42})
+    tracer = telemetry.tracer_provider.get_tracer("client")
+    with tracer.start_as_current_span("client call"):
+        client.publish(Message(content=request, reply_to=replies), topic=topic)
+        reply = client.consume(timeout=5.0)
+    server.join(timeout=5.0)
+
+    assert reply.status.code == StatusCode.OK
+    assert reply.unpack(Struct) == request
+
+    spans = {span.name: span for span in telemetry.spans()}
+    root = spans["client call"]
+    publish, served = spans["publish " + topic], spans[topic]
+    reply_publish, reply_receive = spans["publish (reply)"], spans["receive (reply)"]
+    request_receive = spans["receive " + topic]
+
+    assert publish.parent.span_id == root.context.span_id
+    assert request_receive.parent.span_id == publish.context.span_id
+    assert request_receive.links[0].context.span_id == publish.context.span_id
+    assert served.parent.span_id == request_receive.context.span_id
+    assert reply_publish.parent.span_id == served.context.span_id
+    assert reply_receive.parent.span_id == root.context.span_id
+    assert reply_receive.links[0].context.span_id == reply_publish.context.span_id
+    assert {s.context.trace_id for s in spans.values()} == {root.context.trace_id}
