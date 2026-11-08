@@ -1,6 +1,7 @@
 DOCKER_USERNAME ?= luizcarloscf
 BROKER_NAME ?= rabbitmq
 BROKER_IMAGE ?= rabbitmq:4.3.6
+MYPY_PACKAGES := pris_msgs pris_wire opentelemetry.instrumentation.pris_wire
 
 .PHONY: help sync proto test lint build clean broker-up broker-down docs-serve docs-build docs-image
 
@@ -30,7 +31,7 @@ test:
 
 lint:
 	uv run flake8
-	uv run mypy $(wildcard packages/*/src)
+	uv run mypy $(addprefix -p ,$(MYPY_PACKAGES))
 
 build:
 	uv build --all-packages --out-dir dist

@@ -1,18 +1,22 @@
 [tool.uv.workspace]
-members = ["packages/pris-msgs", "packages/pris-wire"]
+members = ["packages/pris-msgs", "packages/pris-wire", "packages/opentelemetry-instrumentation-pris-wire"]
 
 [tool.uv.sources]
 pris-msgs = { workspace = true }
 pris-wire = { workspace = true }
+opentelemetry-instrumentation-pris-wire = { workspace = true }
 
 [dependency-groups]
 dev = [
     "pris-msgs[numpy,opencv,turbojpeg]",
+    "opentelemetry-instrumentation-pris-wire[otlp]",
     "pytest==8.3.5",
     "flake8==7.2.0",
     "mypy==2.4.1",
     "zensical==0.1.0; python_version >= '3.11'",
     "grpcio-tools==1.85.1",
+    "opentelemetry-sdk==1.45.2",
+    "opentelemetry-test-utils==0.66b2",
 ]
 
 [tool.pytest.ini_options]

@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "opentelemetry-instrumentation-pris-wire"
+dynamic = ["version"]
+description = "OpenTelemetry tracing and metrics instrumentation for pris-wire"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "labvisio", email = "labvisio.ufes@gmail.com" }]
+maintainers = [{ name = "Luiz Carlos Cosmi Filho", email = "luizcarloscosmifilho@gmail.com" }]
+requires-python = ">=3.10"
+dependencies = [
+    "opentelemetry-api~=1.45",
+    "opentelemetry-instrumentation==0.66b2",
+    "opentelemetry-semantic-conventions==0.66b2",
+    "wrapt>=1.0.0,<3.0.0",
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+]
+
+[project.optional-dependencies]
+instruments = ["pris-wire>=1.0.0"]
+otlp = [
+    "opentelemetry-exporter-otlp-proto-http~=1.45",
+    "opentelemetry-sdk~=1.45",
+]
+
+[project.entry-points.opentelemetry_instrumentor]
+pris_wire = "opentelemetry.instrumentation.pris_wire:PrisWireInstrumentor"
+
+[tool.hatch.version]
+path = "src/opentelemetry/instrumentation/pris_wire/version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/opentelemetry"]
