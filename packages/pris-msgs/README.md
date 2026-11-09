@@ -8,7 +8,7 @@ pip install "pris-msgs @ git+https://github.com/luizcarloscf/pris@pris-msgs-v1.0
 
 | Extra | Needed by |
 |---|---|
-| `numpy` | `pris_msgs.utils.tensor`, `pris_msgs.utils.annotation` |
+| `numpy` | `pris_msgs.utils.tensor`, `pris_msgs.utils.vertex`, `pris_msgs.utils.annotation` |
 | `opencv` | `pris_msgs.utils.image` |
 | `turbojpeg` | `pris_msgs.utils.image` with `turbojpeg=True`; also needs the system `libturbojpeg` |
 
@@ -30,6 +30,7 @@ Each `.proto` file in `src/pris_msgs/` becomes a module, `pris_msgs.<name>_pb2`.
 |---|---|
 | `pris_msgs.utils.io` | `load` and `save` any message as a JSON file |
 | `pris_msgs.utils.tensor` | `to_array` and `to_tensor`: `pris.common.Tensor` ↔ NumPy array |
+| `pris_msgs.utils.vertex` | `to_array` and `to_vertex`: `pris.vision.Vertex` ↔ NumPy array of 2-D or 3-D points, optionally in homogeneous coordinates |
 | `pris_msgs.utils.image` | `to_array` and `to_image`: `pris.vision.Image` ↔ NumPy array of BGR or gray pixels |
 | `pris_msgs.utils.annotation` | `to_array` and `to_annotation`: `ObjectAnnotation` keypoints ↔ NumPy arrays, in the order of a list of `HumanKeypoints` ids |
 | `pris_msgs.utils.build` | compiles your own `.proto` files that import the shared ones |

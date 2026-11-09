@@ -77,6 +77,27 @@ intrinsic = to_array(calibration.intrinsic)
 print(intrinsic.shape, intrinsic[0, 2])        # (3, 3) 320.0
 ```
 
+### Vertices
+
+`pris_msgs.utils.vertex` converts a `pris.vision.Vertex`, a point in an image (x, y) or in space (x, y, z), to a NumPy array and back, optionally in homogeneous coordinates to apply a 3x3 or 4x4 transform. Needs `pris-msgs[numpy]`.
+
+```python
+import numpy as np
+
+from pris_msgs.image_pb2 import Vertex
+from pris_msgs.utils.vertex import to_array, to_vertex
+
+transform = np.eye(4)
+transform[:3, 3] = (1.0, 0.0, 0.5)             # translation
+
+point = transform @ to_array(Vertex(x=1, y=2, z=3), homogeneous=True)
+print(point)                                   # [2.  2.  3.5 1. ]
+print(to_vertex(point, homogeneous=True))      # x: 2 y: 2 z: 3.5 (one field per line)
+
+pixel = to_array(Vertex(x=320, y=240), dims=2)
+print(pixel)                                   # [320. 240.]
+```
+
 ### Images
 
 `pris_msgs.utils.image` decodes a `pris.vision.Image` (JPEG, PNG or WebP) to a NumPy array of BGR or gray pixels, and encodes arrays back. Needs `pris-msgs[opencv]`.
