@@ -22,6 +22,7 @@ The `k8s/` folder has the manifests of the infrastructure and of the services, o
 | `otel-collector/` | `otel/opentelemetry-collector:0.163.2` | `otel-collector.pris`: 4317 (OTLP gRPC), 4318 (OTLP HTTP) |
 | `pris-broker-events/` | `luizcarloscf/pris-broker-events:0.1.0` | publishes `BrokerEvents.Consumers`; one instance (`Recreate`), since replicas would split its events |
 | `pris-calibration-server/` | `luizcarloscf/pris-calibration-server:0.1.0` | serves `CalibrationServer.GetCalibration` |
+| `pris-frame-transformation/` | `luizcarloscf/pris-frame-transformation:0.1.0` | publishes `FrameTransformation.<ids>`, serves `FrameTransformation.GetTransformation`; one instance (`Recreate`) |
 
 The services' default options already use these names: the broker at `amqp://guest:guest@rabbitmq.pris`, and telemetry sent to `http://otel-collector.pris:4318`.
 
@@ -38,6 +39,7 @@ kubectl -n pris create configmap pris-calibration-server-calibrations \
   --from-file=calibrations/labvisio/ --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -f k8s/pris-broker-events/
 kubectl apply -f k8s/pris-calibration-server/
+kubectl apply -f k8s/pris-frame-transformation/
 ```
 
 ## The broker

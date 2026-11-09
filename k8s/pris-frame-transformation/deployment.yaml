@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pris-frame-transformation
+  namespace: pris
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: pris-frame-transformation
+  template:
+    metadata:
+      labels:
+        app: pris-frame-transformation
+    spec:
+      containers:
+        - name: pris-frame-transformation
+          image: luizcarloscf/pris-frame-transformation:0.1.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: LOG_LEVEL
+              value: INFO
+          resources:
+            limits:
+              cpu: 500m
+              memory: 256Mi

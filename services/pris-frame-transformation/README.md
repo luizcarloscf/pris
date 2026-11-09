@@ -52,6 +52,8 @@ EOF
 uv run --project services/pris-frame-transformation pris-frame-transformation /tmp/options.json
 ```
 
+The image, built with `make image` in this folder or `make image SERVICE=pris-frame-transformation` at the repository root, runs with the cluster's options; on one host, mount your own over `/etc/pris-frame-transformation/options.json` (see [Docker images](../../docs/content/deployment/docker.md)). On Kubernetes, [`k8s/pris-frame-transformation/`](../../k8s/pris-frame-transformation/) runs it as one instance (see [Kubernetes](../../docs/content/deployment/kubernetes.md)).
+
 ## Development
 
 An independent project: its `pyproject.toml` takes the PRIS libraries from their git tags, and `uv.lock` pins them. pris-common depends on pris-msgs and pris-wire, so `override-dependencies` pins those to the same tags as the service (see [Libraries from git tags](../../docs/content/deployment/git-dependencies.md)). From the repository root, with a broker running, `make test` and `make lint` run its tests and mypy too; in this folder, `uv run pytest` and `uv run mypy src`. The tests use a real broker at `WIRE_RABBITMQ_URI` (default `amqp://guest:guest@localhost:5672`), each on topics of its own, and the calibrations of `calibrations/labvisio/`. `make proto` regenerates `conf/options_pb2.py/.pyi` after editing `options.proto`.
