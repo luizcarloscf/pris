@@ -20,44 +20,12 @@
 
 Replies are named `(reply)` instead of their random queue names, and consume timeouts record nothing, so traces and metrics stay readable.
 
-## Seeing the spans
-
-Every example below runs as is, with a broker on `localhost` (`make broker-up` in this repository) and the package installed with its `otlp` extra (see the [README](https://github.com/luizcarloscf/pris/tree/main/packages/opentelemetry-instrumentation-pris-wire#readme)). They keep the spans in memory and print them, so no collector is needed:
-
-```python
-from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import SimpleSpanProcessor
-from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
-from opentelemetry.instrumentation.pris_wire.otlp import install
-from pris_wire.core import Channel, Message, Subscription
-
-spans = InMemorySpanExporter()
-tracer_provider = TracerProvider()
-tracer_provider.add_span_processor(SimpleSpanProcessor(spans))
-shutdown = install(tracer_provider, MeterProvider())
-
-channel = Channel("amqp://guest:guest@localhost:5672")
-subscription = Subscription(channel)
-subscription.subscribe("Robot.0.Position")
-channel.publish(Message(content=b"hello"), topic="Robot.0.Position")
-channel.consume(timeout=1.0)
-channel.close()
-
-for span in spans.get_finished_spans():
-    print(span.name, span.kind)
-# publish Robot.0.Position SpanKind.PRODUCER
-# receive Robot.0.Position SpanKind.CLIENT
-shutdown()
-```
-
 ## One trace per request
 
-The caller's trace context travels in the request, so the service's span is its child, and the reply continues the same trace:
+The trace context travels inside each message, so a request, its handling and its reply are one trace. The example runs as is, with a broker on `localhost` (`make broker-up` in this repository) and the package installed with its `otlp` extra (see the [README](https://github.com/luizcarloscf/pris/tree/main/packages/opentelemetry-instrumentation-pris-wire#readme)). It keeps the spans in memory, so no collector is needed, and one channel plays both the service and the caller:
 
 ```python
 from google.protobuf.wrappers_pb2 import FloatValue
-from opentelemetry import trace
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
@@ -66,10 +34,10 @@ from opentelemetry.instrumentation.pris_wire.otlp import install
 from pris_wire.core import Channel, Message, Subscription
 from pris_wire.rpc import ServiceProvider
 
-spans = InMemorySpanExporter()
+spans = InMemorySpanExporter()                          # keeps the spans in memory
 tracer_provider = TracerProvider()
 tracer_provider.add_span_processor(SimpleSpanProcessor(spans))
-shutdown = install(tracer_provider, MeterProvider())
+install(tracer_provider, MeterProvider())               # instruments pris-wire
 
 channel = Channel("amqp://guest:guest@localhost:5672")
 provider = ServiceProvider(channel)
@@ -77,36 +45,39 @@ provider.delegate("Math.Double", lambda value, context: FloatValue(value=2 * val
                   request_type=FloatValue, reply_type=FloatValue)
 replies = Subscription(channel)
 
-with trace.get_tracer("caller").start_as_current_span("ask"):
-    channel.publish(Message(content=FloatValue(value=21), reply_to=replies), topic="Math.Double")
-    provider.serve(channel.consume(timeout=1.0))
-    reply = channel.consume(timeout=1.0)
-channel.close()
+channel.publish(Message(content=FloatValue(value=21), reply_to=replies), topic="Math.Double")
+provider.serve(channel.consume(timeout=1.0))            # the service answers
+print(channel.consume(timeout=1.0).unpack(FloatValue).value)   # 42.0
 
-print(reply.unpack(FloatValue).value)                                  # 42.0
-print(sorted(span.name for span in spans.get_finished_spans()))
-# ['Math.Double', 'ask', 'publish (reply)', 'publish Math.Double', 'receive (reply)', 'receive Math.Double']
+for span in spans.get_finished_spans():
+    print(span.name)
+# publish Math.Double
+# receive Math.Double
+# publish (reply)
+# Math.Double
+# receive (reply)
 print(len({span.context.trace_id for span in spans.get_finished_spans()}))   # 1: one trace
-shutdown()
 ```
 
-When you consume messages yourself, `extract(message)` gives the message's receive span, to start your processing span as its child: `tracer.start_as_current_span("process", context=extract(message))`. Each hop then reads publish → receive → processing.
+The spans are listed as they finish: the service's span, `Math.Double`, ends after it published the reply.
+
+When you consume messages yourself, `extract(message)` gives the context to start your own span under the message's receive span: `tracer.start_as_current_span("process", context=extract(message))`.
 
 ## In a service
 
-A service exports to a [collector](https://opentelemetry.io/docs/collector/) over OTLP/HTTP with one call, at startup; an empty endpoint turns telemetry off:
+A service sends its traces and metrics to an [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) with one call at startup, and flushes them before it exits:
 
 ```python
 from opentelemetry.instrumentation.pris_wire.otlp import setup_telemetry
 
-shutdown = setup_telemetry("", default_service_name="my-service")   # e.g. "http://otel-collector:4318"
+shutdown = setup_telemetry("http://otel-collector:4318", default_service_name="my-service")
 try:
-    pass                                                             # run the service
+    pass                                                # run the service
 finally:
-    shutdown()                                                       # flushes what is pending
+    shutdown()
 ```
 
-Without changing code, `opentelemetry-instrument python service.py` finds the instrumentation through its entry point and takes its settings from the `OTEL_*` environment variables.
+An empty endpoint turns telemetry off. Without changing code, `opentelemetry-instrument python service.py` finds the instrumentation by itself and takes its settings from the `OTEL_*` environment variables.
 
 ## Reference
 
