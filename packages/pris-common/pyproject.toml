@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pris-common"
+version = "0.1.0"
+description = "Code shared by the PRIS services"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "labvisio", email = "labvisio.ufes@gmail.com" }]
+maintainers = [{ name = "Luiz Carlos Cosmi Filho", email = "luizcarloscosmifilho@gmail.com" }]
+requires-python = ">=3.10"
+dependencies = [
+    "pris-msgs>=1.0.0,<2",
+    "pris-wire>=1.0.0,<2",
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pris_common"]

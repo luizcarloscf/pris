@@ -1,7 +1,7 @@
 DOCKER_USERNAME ?= luizcarloscf
 BROKER_NAME ?= rabbitmq
 BROKER_IMAGE ?= rabbitmq:4.3.6
-MYPY_PACKAGES := pris_msgs pris_wire opentelemetry.instrumentation.pris_wire
+MYPY_PACKAGES := pris_msgs pris_wire opentelemetry.instrumentation.pris_wire pris_common
 
 .PHONY: help sync proto test lint build clean broker-up broker-down docs-serve docs-build docs-image
 

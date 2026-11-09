@@ -1,10 +1,11 @@
 [tool.uv.workspace]
-members = ["packages/pris-msgs", "packages/pris-wire", "packages/opentelemetry-instrumentation-pris-wire"]
+members = ["packages/pris-msgs", "packages/pris-wire", "packages/opentelemetry-instrumentation-pris-wire", "packages/pris-common"]
 
 [tool.uv.sources]
 pris-msgs = { workspace = true }
 pris-wire = { workspace = true }
 opentelemetry-instrumentation-pris-wire = { workspace = true }
+pris-common = { workspace = true }
 
 [dependency-groups]
 dev = [

@@ -10,6 +10,7 @@ nav = [
     { "pris-msgs" = "libraries/pris-msgs.md" },
     { "pris-wire" = "libraries/pris-wire.md" },
     { "OpenTelemetry instrumentation" = "libraries/opentelemetry-instrumentation-pris-wire.md" },
+    { "pris-common" = "libraries/pris-common.md" },
   ] },
   { "Project" = [
     { "Status" = "project/status.md" },
