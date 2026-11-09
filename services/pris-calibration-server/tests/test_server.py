@@ -31,6 +31,7 @@ def test_default_options():
 
     assert options.broker_uri == "amqp://guest:guest@rabbitmq.pris"
     assert options.calibrations_path == "/etc/calibrations"
+    assert options.telemetry.otlp_endpoint == "http://otel-collector.pris:4318"
 
 
 def test_calibrations_in_the_order_requested(channel):

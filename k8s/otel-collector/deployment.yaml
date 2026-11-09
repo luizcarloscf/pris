@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: pris
+  labels:
+    app: otel-collector
+spec:
+  selector:
+    matchLabels:
+      app: otel-collector
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      containers:
+      - name: otel-collector
+        image: otel/opentelemetry-collector:0.163.2
+        args: ["--config=/etc/otelcol/config.yaml"]
+        ports:
+        - containerPort: 4317
+        - containerPort: 4318
+        resources:
+          requests:
+            memory: 128Mi
+            cpu: 100m
+          limits:
+            memory: 512Mi
+            cpu: "1"
+        volumeMounts:
+        - name: config
+          mountPath: /etc/otelcol
+      volumes:
+      - name: config
+        configMap:
+          name: otel-collector
+          items:
+          - key: config
+            path: config.yaml

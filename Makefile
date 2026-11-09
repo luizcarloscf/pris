@@ -6,7 +6,7 @@ SERVICES := $(patsubst services/%/uv.lock,%,$(wildcard services/*/uv.lock))
 
 unexport VIRTUAL_ENV
 
-.PHONY: help sync proto test lint build clean broker-up broker-down docs-serve docs-build docs-image
+.PHONY: help sync proto test lint build image clean broker-up broker-down docs-serve docs-build docs-image
 
 help:
 	@echo "sync         install every workspace package (editable) into .venv"
@@ -14,6 +14,7 @@ help:
 	@echo "test         run the tests of the packages and of every service (needs make broker-up)"
 	@echo "lint         flake8 + mypy, packages and services"
 	@echo "build        build sdists and wheels into dist/"
+	@echo "image        build a service image locally: make image SERVICE=pris-calibration-server"
 	@echo "broker-up    start a local RabbitMQ (host network)"
 	@echo "broker-down  stop the local RabbitMQ"
 	@echo "docs-serve   serve the documentation with live reload"
@@ -41,6 +42,10 @@ lint:
 
 build:
 	uv build --all-packages --out-dir dist
+
+image:
+	@test -n "$(SERVICE)" || { echo "usage: make image SERVICE=<service>"; exit 2; }
+	$(MAKE) -C services/$(SERVICE) image DOCKER_USERNAME=$(DOCKER_USERNAME)
 
 broker-up:
 	docker run -d --rm --network host --name $(BROKER_NAME) $(BROKER_IMAGE)

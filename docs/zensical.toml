@@ -15,6 +15,11 @@ nav = [
   { "Services" = [
     { "pris-calibration-server" = "services/pris-calibration-server.md" },
   ] },
+  { "Deployment" = [
+    { "Libraries from git tags" = "deployment/git-dependencies.md" },
+    { "Docker images" = "deployment/docker.md" },
+    { "Kubernetes" = "deployment/kubernetes.md" },
+  ] },
   { "Project" = [
     { "Status" = "project/status.md" },
   ] },

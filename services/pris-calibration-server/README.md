@@ -30,7 +30,7 @@ The calibrations of each site are kept in [`calibrations/<site>/`](../../calibra
 
 ## Options
 
-`pris-calibration-server [options.json]`, by default `/etc/pris-calibration-server/options.json`. The fields are described in [`conf/options.proto`](src/pris_calibration_server/conf/options.proto) and their defaults are in [`etc/conf/options.json`](etc/conf/options.json): `broker_uri`, `calibrations_path` (`/etc/calibrations`, where the calibrations are mounted) and `telemetry`.
+`pris-calibration-server [options.json]`, by default `/etc/pris-calibration-server/options.json`. The fields are described in [`conf/options.proto`](src/pris_calibration_server/conf/options.proto) and their defaults, those of the image on a cluster, are in [`etc/conf/options.json`](etc/conf/options.json): `broker_uri` (`rabbitmq.pris`), `calibrations_path` (`/etc/calibrations`, where the calibrations are mounted) and `telemetry` (to `otel-collector.pris`; an empty `otlp_endpoint` turns it off).
 
 ## Telemetry
 
@@ -46,6 +46,8 @@ cat > /tmp/options.json <<EOF
 EOF
 uv run --project services/pris-calibration-server pris-calibration-server /tmp/options.json
 ```
+
+The image, built with `make image` in this folder or `make image SERVICE=pris-calibration-server` at the repository root, holds no calibrations: mount them at `/etc/calibrations`, and on one host your own options over `/etc/pris-calibration-server/options.json` (see [Docker images](../../docs/content/deployment/docker.md)). On Kubernetes, [`k8s/pris-calibration-server/`](../../k8s/pris-calibration-server/) mounts the ConfigMap `pris-calibration-server-calibrations`, created as [`calibrations/README.md`](../../calibrations/README.md) says (see [Kubernetes](../../docs/content/deployment/kubernetes.md)).
 
 ## Development
 

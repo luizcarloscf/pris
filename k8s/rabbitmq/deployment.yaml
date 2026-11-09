@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: pris
+  labels:
+    app: rabbitmq
+spec:
+  selector:
+    matchLabels:
+      app: rabbitmq
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:4.3.6-management
+        ports:
+        - containerPort: 5672
+        - containerPort: 1883
+        - containerPort: 15675
+        - containerPort: 15672
+        readinessProbe:
+          exec:
+            command: ["rabbitmq-diagnostics", "-q", "check_port_connectivity"]
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
+        resources:
+          requests:
+            memory: 512Mi
+            cpu: 250m
+          limits:
+            memory: 2Gi
+            cpu: "2"
+        volumeMounts:
+        - name: rabbitmq-config
+          mountPath: /etc/rabbitmq/
+      volumes:
+      - name: rabbitmq-config
+        configMap:
+          name: rabbitmq
+          items:
+          - key: plugins
+            path: enabled_plugins
+          - key: config
+            path: rabbitmq.conf
+          - key: definitions
+            path: definitions.json
