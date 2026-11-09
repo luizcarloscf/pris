@@ -1,0 +1,11 @@
+{
+  "broker_uri": "amqp://guest:guest@rabbitmq.pris",
+  "broker_management_api": {
+    "uri": "http://guest:guest@rabbitmq.pris",
+    "timeout": 5.0
+  },
+  "telemetry": {
+    "otlp_endpoint": "http://otel-collector.pris:4318",
+    "service_name": "pris-broker-events"
+  }
+}

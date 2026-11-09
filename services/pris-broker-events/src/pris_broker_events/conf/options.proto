@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package pris.broker_events;
+
+message BrokerManagementApiOptions {
+  // management API of the broker (e.g.: 'http://guest:guest@localhost:15672').
+  string uri = 1;
+  // seconds to wait for its response.
+  double timeout = 2;
+}
+
+message TelemetryOptions {
+  // OTLP/HTTP collector endpoint (e.g.: 'http://otel-collector:4318'). Traces go to
+  // '<endpoint>/v1/traces' and metrics to '<endpoint>/v1/metrics'. Empty disables telemetry.
+  string otlp_endpoint = 1;
+  // 'service.name' resource attribute; empty takes OTEL_SERVICE_NAME, then 'pris-broker-events'.
+  string service_name = 2;
+}
+
+message BrokerEventsOptions {
+  // broker uri (e.g.: 'amqp://guest:guest@localhost:5672').
+  string broker_uri = 1;
+  // the broker's management API, for the initial list of consumers.
+  BrokerManagementApiOptions broker_management_api = 2;
+  // traces and metrics export (OpenTelemetry).
+  TelemetryOptions telemetry = 3;
+}
