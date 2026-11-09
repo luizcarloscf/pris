@@ -115,15 +115,16 @@ class CameraCalibration(_message.Message):
     def __init__(self, id: _Optional[int] = ..., calibrated_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., error: _Optional[float] = ..., resolution: _Optional[_Union[_image_pb2.Resolution, _Mapping]] = ..., intrinsic: _Optional[_Union[_common_pb2.Tensor, _Mapping]] = ..., distortion: _Optional[_Union[_common_pb2.Tensor, _Mapping]] = ..., extrinsic: _Optional[_Iterable[_Union[FrameTransformation, _Mapping]]] = ...) -> None: ...
 
 class FrameTransformation(_message.Message):
-    __slots__ = ("to", "tf", "expiration")
-    FROM_FIELD_NUMBER: _ClassVar[int]
-    TO_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("source", "target", "tf", "expiration")
+    SOURCE_FIELD_NUMBER: _ClassVar[int]
+    TARGET_FIELD_NUMBER: _ClassVar[int]
     TF_FIELD_NUMBER: _ClassVar[int]
     EXPIRATION_FIELD_NUMBER: _ClassVar[int]
-    to: int
+    source: int
+    target: int
     tf: _common_pb2.Tensor
     expiration: _timestamp_pb2.Timestamp
-    def __init__(self, to: _Optional[int] = ..., tf: _Optional[_Union[_common_pb2.Tensor, _Mapping]] = ..., expiration: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., **kwargs) -> None: ...
+    def __init__(self, source: _Optional[int] = ..., target: _Optional[int] = ..., tf: _Optional[_Union[_common_pb2.Tensor, _Mapping]] = ..., expiration: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class FrameTransformations(_message.Message):
     __slots__ = ("tfs",)
@@ -132,11 +133,12 @@ class FrameTransformations(_message.Message):
     def __init__(self, tfs: _Optional[_Iterable[_Union[FrameTransformation, _Mapping]]] = ...) -> None: ...
 
 class IdPair(_message.Message):
-    __slots__ = ("to",)
-    FROM_FIELD_NUMBER: _ClassVar[int]
-    TO_FIELD_NUMBER: _ClassVar[int]
-    to: int
-    def __init__(self, to: _Optional[int] = ..., **kwargs) -> None: ...
+    __slots__ = ("source", "target")
+    SOURCE_FIELD_NUMBER: _ClassVar[int]
+    TARGET_FIELD_NUMBER: _ClassVar[int]
+    source: int
+    target: int
+    def __init__(self, source: _Optional[int] = ..., target: _Optional[int] = ...) -> None: ...
 
 class GetTransformationRequest(_message.Message):
     __slots__ = ("ids",)

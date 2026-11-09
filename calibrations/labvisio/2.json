@@ -56,8 +56,8 @@
   },
   "extrinsic": [
     {
-      "from": "1000",
-      "to": "2",
+      "source": "1000",
+      "target": "2",
       "tf": {
         "shape": {
           "dims": [

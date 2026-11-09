@@ -102,10 +102,10 @@ message CameraCalibration {
 
 // Represent the transformation between two coordinate systems.
 message FrameTransformation {
-  // Id of the "from" frame.
-  int64 from = 1;
-  // Id of the "to" frame.
-  int64 to = 2;
+  // Id of the frame the transformation maps from.
+  int64 source = 1;
+  // Id of the frame the transformation maps to.
+  int64 target = 2;
   // Transformation matrix [R T; 0 1] with shape = [4,4].
   common.Tensor tf = 3;
   /* Timepoint where this transformation is still valid. If not present the transformation will be
@@ -119,12 +119,12 @@ message FrameTransformations {
 }
 
 message IdPair {
-  int64 from = 1;
-  int64 to = 2;
+  int64 source = 1;
+  int64 target = 2;
 }
 
 message GetTransformationRequest {
-  // Sequence of pairs (from -> to) describing the desired transformations
+  // Sequence of pairs (source -> target) describing the desired transformations
   repeated IdPair ids = 1;
 }
 
