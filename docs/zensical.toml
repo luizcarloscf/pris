@@ -12,6 +12,9 @@ nav = [
     { "OpenTelemetry instrumentation" = "libraries/opentelemetry-instrumentation-pris-wire.md" },
     { "pris-common" = "libraries/pris-common.md" },
   ] },
+  { "Services" = [
+    { "pris-calibration-server" = "services/pris-calibration-server.md" },
+  ] },
   { "Project" = [
     { "Status" = "project/status.md" },
   ] },

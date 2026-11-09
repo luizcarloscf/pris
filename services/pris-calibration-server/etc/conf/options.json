@@ -1,0 +1,8 @@
+{
+  "broker_uri": "amqp://guest:guest@rabbitmq.pris",
+  "calibrations_path": "/etc/calibrations",
+  "telemetry": {
+    "otlp_endpoint": "",
+    "service_name": "pris-calibration-server"
+  }
+}
