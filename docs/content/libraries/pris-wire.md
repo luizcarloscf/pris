@@ -26,20 +26,31 @@ A message that matches no binding is dropped: the broker keeps nothing for topic
 
 ## Publish and subscribe
 
-Every example below runs as is, with a broker on `localhost` (`make broker-up` in this repository) and pris-wire and pris-msgs installed (see the [README](https://github.com/luizcarloscf/pris/tree/main/packages/pris-wire#readme)):
+Every example below runs as is, with a broker on `localhost` (`make broker-up` in this repository) and pris-wire and pris-msgs installed (see the [README](https://github.com/luizcarloscf/pris/tree/main/packages/pris-wire#readme)). Each part runs in a terminal of its own; start the one that listens first.
+
+A subscriber receives the positions of every robot:
 
 ```python
 from pris_msgs.common_pb2 import Position
-from pris_wire.core import Channel, Message, Subscription
+from pris_wire.core import Channel, Subscription
 
 channel = Channel("amqp://guest:guest@localhost:5672")
 subscription = Subscription(channel)
 subscription.subscribe("Robot.*.Position")             # * matches one word
 
-channel.publish(Message(content=Position(x=1.5)), topic="Robot.0.Position")
+while True:
+    message = channel.consume()
+    print(message.topic, message.unpack(Position).x)   # Robot.0.Position 1.5
+```
 
-message = channel.consume(timeout=1.0)
-print(message.topic, message.unpack(Position).x)       # Robot.0.Position 1.5
+A publisher sends the position of robot 0:
+
+```python
+from pris_msgs.common_pb2 import Position
+from pris_wire.core import Channel, Message
+
+channel = Channel("amqp://guest:guest@localhost:5672")
+channel.publish(Message(content=Position(x=1.5)), topic="Robot.0.Position")
 channel.close()
 ```
 
@@ -47,54 +58,74 @@ channel.close()
 
 ## Requests and replies
 
-A `ServiceProvider` calls a function for every request published to a topic and publishes its return value as the reply. The caller sets `reply_to` to its own subscription, and matches the reply by `correlation_id`:
+A `ServiceProvider` calls a function for every request published to a topic and publishes its return value as the reply:
 
 ```python
 from google.protobuf.wrappers_pb2 import FloatValue
 from pris_msgs.common_pb2 import Position
-from pris_wire.core import Channel, Message, Status, StatusCode, Subscription
+from pris_wire.core import Channel
 from pris_wire.rpc import ServiceProvider
 
 
 def norm(position, context):
-    if position.z != 0:
-        return Status(StatusCode.INVALID_ARGUMENT, "only 2D positions")
     return FloatValue(value=(position.x ** 2 + position.y ** 2) ** 0.5)
 
 
 channel = Channel("amqp://guest:guest@localhost:5672")
 provider = ServiceProvider(channel)
 provider.delegate("Geometry.Norm", norm, request_type=Position, reply_type=FloatValue)
+provider.run()                                          # serves until interrupted
+```
 
+The caller sets `reply_to` to its own subscription, where the reply arrives with the request's `correlation_id`:
+
+```python
+from google.protobuf.wrappers_pb2 import FloatValue
+from pris_msgs.common_pb2 import Position
+from pris_wire.core import Channel, Message, Subscription
+
+channel = Channel("amqp://guest:guest@localhost:5672")
 replies = Subscription(channel)
-request = Message(content=Position(x=3, y=4), reply_to=replies)
-channel.publish(request, topic="Geometry.Norm")
+channel.publish(Message(content=Position(x=3, y=4), reply_to=replies), topic="Geometry.Norm")
 
-provider.serve(channel.consume(timeout=1.0))           # the service handles the request
-reply = channel.consume(timeout=1.0)                   # the caller gets the reply
-print(reply.correlation_id == request.correlation_id)  # True
+reply = channel.consume(timeout=1.0)
 print(reply.status.code, reply.unpack(FloatValue).value)   # StatusCode.OK 5.0
 channel.close()
 ```
 
-Here one channel plays both parts so the example runs alone; a real service calls `provider.run()`, which serves forever. The reply's `status` says how the request went: `OK` with the function's result, the `Status` the function returned, `FAILED_PRECONDITION` for a request of the wrong type, `INTERNAL_ERROR` if the function raised, or `DEADLINE_EXCEEDED` for a request whose `timeout` passed.
+The reply's `status` says how the request went: `OK` with the function's result, a `Status` the function returned instead of a result (such as `Status(StatusCode.INVALID_ARGUMENT, "only 2D positions")`), `FAILED_PRECONDITION` for a request of the wrong type, `INTERNAL_ERROR` if the function raised, or `DEADLINE_EXCEEDED` for a request whose `timeout` passed.
 
 ## Sharing work between replicas
 
-Consumers of one named queue split its messages, so replicas of a service share the load. With `manual_ack`, each message is settled with `ack` or `reject`, and `prefetch=1` gives the next message to whichever replica is free:
+Consumers of one named queue split its messages, so replicas of a service share the load. With `manual_ack`, each message is settled with `ack` or `reject`, and `prefetch=1` gives the next message to whichever replica is free. Start this worker in two terminals:
 
 ```python
-from pris_wire.core import Channel, Message, Subscription
+import time
+
+from pris_wire.core import Channel, Subscription
 
 channel = Channel("amqp://guest:guest@localhost:5672")
 Subscription(channel, name="Jobs", prefetch=1, manual_ack=True)
 
-channel.publish(Message(content=b"job 1"), topic="Jobs")
-job = channel.consume(timeout=1.0)
-print(job.body)                                        # b'job 1'
-channel.ack(job)                                       # done: the broker forgets it
+while True:
+    job = channel.consume()
+    print(job.body)                                     # b'job 0', then b'job 2'
+    time.sleep(1.0)                                     # the work
+    channel.ack(job)                                    # done: the broker forgets it
+```
+
+Then send four jobs:
+
+```python
+from pris_wire.core import Channel, Message
+
+channel = Channel("amqp://guest:guest@localhost:5672")
+for n in range(4):
+    channel.publish(Message(content="job {}".format(n).encode()), topic="Jobs")
 channel.close()
 ```
+
+Each worker gets two jobs: one prints `b'job 0'` and `b'job 2'`, the other `b'job 1'` and `b'job 3'`, since a worker gets the next job only after acknowledging the previous one.
 
 `Subscription(arguments=...)` passes queue arguments to the broker, for example `{"x-max-length": 1, "x-overflow": "drop-head"}` to keep only the newest message.
 
@@ -111,4 +142,4 @@ log.info("serving on '{}'", "Geometry.Norm")
 
 ## Reference
 
-Installation, the modules, and developmentare in the package's [README](https://github.com/luizcarloscf/pris/tree/main/packages/pris-wire#readme).
+Installation, the modules, and development are in the package's [README](https://github.com/luizcarloscf/pris/tree/main/packages/pris-wire#readme).
