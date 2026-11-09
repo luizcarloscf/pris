@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pris-frame-transformation"
+version = "0.1.0"
+description = "Keeps the graph of the coordinate frames and gives the transformation between any two"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "labvisio", email = "labvisio.ufes@gmail.com" }]
+maintainers = [{ name = "Luiz Carlos Cosmi Filho", email = "luizcarloscosmifilho@gmail.com" }]
+requires-python = ">=3.10"
+dependencies = [
+    "pris-msgs[numpy]>=1.0.0,<2",
+    "pris-wire>=1.0.0,<2",
+    "opentelemetry-api~=1.45",
+    "opentelemetry-instrumentation-pris-wire[otlp]>=0.1.0,<0.2",
+    "pris-common>=0.1.0,<0.2",
+    "numpy>=1.26",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+
+[project.scripts]
+pris-frame-transformation = "pris_frame_transformation.main:main"
+
+[tool.uv.sources]
+pris-msgs = { git = "https://github.com/luizcarloscf/pris", tag = "pris-msgs-v1.0.0", subdirectory = "packages/pris-msgs" }
+pris-wire = { git = "https://github.com/luizcarloscf/pris", tag = "pris-wire-v1.0.0", subdirectory = "packages/pris-wire" }
+opentelemetry-instrumentation-pris-wire = { git = "https://github.com/luizcarloscf/pris", tag = "opentelemetry-instrumentation-pris-wire-v0.1.0", subdirectory = "packages/opentelemetry-instrumentation-pris-wire" }
+pris-common = { git = "https://github.com/luizcarloscf/pris", tag = "pris-common-v0.1.0", subdirectory = "packages/pris-common" }
+
+[tool.uv]
+override-dependencies = [
+    "pris-msgs @ git+https://github.com/luizcarloscf/pris@pris-msgs-v1.0.0#subdirectory=packages/pris-msgs",
+    "pris-wire @ git+https://github.com/luizcarloscf/pris@pris-wire-v1.0.0#subdirectory=packages/pris-wire",
+]
+
+[dependency-groups]
+dev = [
+    "pytest==8.3.5",
+    "flake8==7.2.0",
+    "mypy==2.4.1",
+    "grpcio-tools==1.85.1",
+    "opentelemetry-sdk==1.45.2",
+    "opentelemetry-test-utils==0.66b2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pris_frame_transformation"]
+
+[tool.pytest.ini_options]
+addopts = "--import-mode=importlib"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+exclude = ['_pb2\.pyi?$']

@@ -10,6 +10,7 @@ Python libraries, the services, and the ROS 2 packages that connect robots to it
 | [`packages/pris-common/`](packages/pris-common/) | code shared by the services: camera calibrations and frame transformations fetched at startup |
 | [`services/pris-broker-events/`](services/pris-broker-events/) | publishes the consumers of each topic |
 | [`services/pris-calibration-server/`](services/pris-calibration-server/) | serves the camera calibrations of a site |
+| [`services/pris-frame-transformation/`](services/pris-frame-transformation/) | the graph of coordinate frames and the transformation between any two |
 | [`calibrations/`](calibrations/) | camera calibrations of each site |
 | [`k8s/`](k8s/) | Kubernetes manifests: the namespace `pris`, RabbitMQ, Jaeger, the OpenTelemetry Collector and the services |
 | [`docs/`](docs/) | the documentation site (Zensical) |

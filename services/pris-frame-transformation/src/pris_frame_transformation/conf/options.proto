@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package pris.frame_transformation;
+
+message TelemetryOptions {
+  // OTLP/HTTP collector endpoint (e.g.: 'http://otel-collector:4318'). Traces go to
+  // '<endpoint>/v1/traces' and metrics to '<endpoint>/v1/metrics'. Empty disables telemetry.
+  string otlp_endpoint = 1;
+  // 'service.name' resource attribute; empty takes OTEL_SERVICE_NAME, then
+  // 'pris-frame-transformation'.
+  string service_name = 2;
+}
+
+message FrameTransformationOptions {
+  // broker uri (e.g.: 'amqp://guest:guest@localhost:5672').
+  string broker_uri = 1;
+  // traces and metrics export (OpenTelemetry).
+  TelemetryOptions telemetry = 2;
+  // cameras whose calibrations (from pris-calibration-server, fetched at startup) give the static
+  // edges: every extrinsic of each one, from its source frame to the camera.
+  repeated int64 camera_ids = 3;
+}
