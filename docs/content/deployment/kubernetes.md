@@ -17,7 +17,7 @@ The `k8s/` folder has the manifests of the infrastructure and of the services, o
 
 | Folder | Image | Reached at |
 |---|---|---|
-| `rabbitmq/` | `rabbitmq:4.3.6-management` | `rabbitmq.pris`: AMQP 5672, management 80. Node ports: 31000 (AMQP), 31080 (management), 31001 (MQTT), 31002 (web MQTT) |
+| `rabbitmq/` | `rabbitmq:4.3.6-management`, configured by `rabbitmq/conf/` | `rabbitmq.pris`: AMQP 5672, management 80. Node ports: 31000 (AMQP), 31080 (management), 31001 (MQTT), 31002 (web MQTT) |
 | `jaeger/` | `jaegertracing/jaeger:2.22.0` | `jaeger.pris:4317` (OTLP gRPC); the UI on node port 31686 |
 | `otel-collector/` | `otel/opentelemetry-collector:0.163.2` | `otel-collector.pris`: 4317 (OTLP gRPC), 4318 (OTLP HTTP) |
 | `pris-calibration-server/` | `luizcarloscf/pris-calibration-server:0.1.0` | serves `CalibrationServer.GetCalibration` |
@@ -30,6 +30,8 @@ The images of the services are built locally and never pushed: build them with `
 
 ```shell
 kubectl apply -f k8s/namespace.yaml
+kubectl -n pris create configmap rabbitmq --from-file=k8s/rabbitmq/conf/ \
+  --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -f k8s/rabbitmq/ -f k8s/jaeger/ -f k8s/otel-collector/
 kubectl -n pris create configmap pris-calibration-server-calibrations \
   --from-file=calibrations/labvisio/ --dry-run=client -o yaml | kubectl apply -f -
@@ -38,7 +40,7 @@ kubectl apply -f k8s/pris-calibration-server/
 
 ## The broker
 
-`rabbitmq/configmap.yaml` holds RabbitMQ's plugins, configuration and definitions, loaded at startup:
+`k8s/rabbitmq/conf/` holds RabbitMQ's plugins (`enabled_plugins`), configuration (`rabbitmq.conf`) and definitions (`definitions.json`), loaded at startup; the ConfigMap `rabbitmq` is created from that folder, as above. The local broker of `make broker-up` mounts the same folder, so local and cluster brokers behave alike:
 
 - **Plugins:** management, MQTT and web MQTT (MQTT messages go to the `pris` exchange), top, and the event exchange.
 - **Definitions:** the `guest` user, allowed from other hosts; the `pris` topic exchange; and every broker event (`amq.rabbitmq.event`, from the event exchange plugin) forwarded into `pris`, so that pris-broker-events can follow the `binding.*` events to keep its list of consumers.

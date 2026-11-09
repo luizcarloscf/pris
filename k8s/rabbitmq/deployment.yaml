@@ -43,10 +43,3 @@ spec:
       - name: rabbitmq-config
         configMap:
           name: rabbitmq
-          items:
-          - key: plugins
-            path: enabled_plugins
-          - key: config
-            path: rabbitmq.conf
-          - key: definitions
-            path: definitions.json
