@@ -12,8 +12,12 @@ from pris_wire.rpc.context import Context
 class CalibrationServer(object):
     """Serves calibrations kept in memory."""
 
-    def __init__(self, channel: Channel, calibrations: dict[int, CameraCalibration],
-                 topic: str = "CalibrationServer.GetCalibration") -> None:
+    def __init__(
+        self,
+        channel: Channel,
+        calibrations: dict[int, CameraCalibration],
+        topic: str = "CalibrationServer.GetCalibration",
+    ) -> None:
         """Register the request on `channel`; nothing is served before `run` or `serve`.
 
         Args:
@@ -25,15 +29,20 @@ class CalibrationServer(object):
         self.topic = topic
         self.provider = ServiceProvider(channel)
         self.provider.add_interceptor(LogInterceptor())
-        self.provider.delegate(topic, self.get_calibrations,
-                               GetCalibrationRequest, GetCalibrationReply)
+        self.provider.delegate(
+            topic,
+            self.get_calibrations,
+            GetCalibrationRequest,
+            GetCalibrationReply,
+        )
 
     def run(self) -> None:
         """Serve requests until the process stops."""
         self.provider.run()
 
-    def get_calibrations(self, request: GetCalibrationRequest,
-                         context: Context) -> GetCalibrationReply | Status:
+    def get_calibrations(
+        self, request: GetCalibrationRequest, context: Context
+    ) -> GetCalibrationReply | Status:
         """Return the calibrations of the requested cameras, in their order.
 
         Args:
@@ -47,7 +56,8 @@ class CalibrationServer(object):
         reply = GetCalibrationReply()
         for id in request.ids:
             if id not in self.calibrations:
-                return Status(StatusCode.NOT_FOUND,
-                              "CameraCalibration with id '{}' not found".format(id))
+                return Status(
+                    StatusCode.NOT_FOUND, "CameraCalibration with id '{}' not found".format(id)
+                )
             reply.calibrations.add().CopyFrom(self.calibrations[id])
         return reply
