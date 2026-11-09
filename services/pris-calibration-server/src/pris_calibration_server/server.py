@@ -8,23 +8,24 @@ from pris_wire.core import Channel, Status, StatusCode
 from pris_wire.rpc import LogInterceptor, ServiceProvider
 from pris_wire.rpc.context import Context
 
-GET_CALIBRATION_TOPIC = "CalibrationServer.GetCalibration"
-
 
 class CalibrationServer(object):
-    """Serves calibrations on GET_CALIBRATION_TOPIC."""
+    """Serves calibrations kept in memory."""
 
-    def __init__(self, channel: Channel, calibrations: dict[int, CameraCalibration]) -> None:
+    def __init__(self, channel: Channel, calibrations: dict[int, CameraCalibration],
+                 topic: str = "CalibrationServer.GetCalibration") -> None:
         """Register the request on `channel`; nothing is served before `run` or `serve`.
 
         Args:
             channel: the channel that consumes the requests and publishes the replies.
             calibrations: the calibrations, by camera id.
+            topic: where the request is served.
         """
         self.calibrations = calibrations
+        self.topic = topic
         self.provider = ServiceProvider(channel)
         self.provider.add_interceptor(LogInterceptor())
-        self.provider.delegate(GET_CALIBRATION_TOPIC, self.get_calibrations,
+        self.provider.delegate(topic, self.get_calibrations,
                                GetCalibrationRequest, GetCalibrationReply)
 
     def run(self) -> None:

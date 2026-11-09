@@ -6,7 +6,7 @@ from pris_msgs.utils.io import load
 from pris_wire.core import Message, StatusCode, Subscription
 
 from pris_calibration_server.conf.options_pb2 import CalibrationServerOptions
-from pris_calibration_server.server import GET_CALIBRATION_TOPIC, CalibrationServer
+from pris_calibration_server.server import CalibrationServer
 
 DEFAULT_OPTIONS = Path(__file__).parents[1] / "etc" / "conf" / "options.json"
 CALIBRATIONS = {0: CameraCalibration(id=0), 3: CameraCalibration(id=3, error=0.5)}
@@ -16,7 +16,7 @@ def call(channel, *ids):
     server = CalibrationServer(channel, CALIBRATIONS)
     replies = Subscription(channel)
     channel.publish(Message(content=GetCalibrationRequest(ids=ids), reply_to=replies),
-                    topic=GET_CALIBRATION_TOPIC)
+                    topic=server.topic)
     server.provider.serve(channel.consume(timeout=1.0))
     return channel.consume(timeout=1.0)
 
@@ -59,7 +59,7 @@ def test_server_span_has_the_ids(channel, spans):
     call(channel, 0)
 
     span = server_span(spans)
-    assert span.name == GET_CALIBRATION_TOPIC
+    assert span.name == "CalibrationServer.GetCalibration"
     assert span.attributes["pris.calibration_server.ids"] == (0,)
     assert span.attributes["rpc.response.status_code"] == "OK"
 
