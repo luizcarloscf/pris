@@ -10,7 +10,7 @@ What each component can do today, what is still to check, and what is planned.
 | [pris-wire](../libraries/pris-wire.md) 1.0.0 | done; type hints on the public API | — |
 | [OpenTelemetry instrumentation](../libraries/opentelemetry-instrumentation-pris-wire.md) 0.1.0 | done; OpenTelemetry 0.66b2 | a metrics backend (the collector only prints metrics) |
 | [pris-common](../libraries/pris-common.md) 0.1.0 | done; camera calibrations and frame transformations fetched at startup | — |
-| [pris-broker-events](../services/pris-broker-events.md) 0.1.0 | done; an independent project, libraries from their git tags; tested against the local broker, configured as the cluster's | the image and the Kubernetes manifests |
+| [pris-broker-events](../services/pris-broker-events.md) 0.1.0 | done; an independent project, libraries from their git tags; tested against the local broker, configured as the cluster's; image `luizcarloscf/pris-broker-events:0.1.0` checked with Docker | deploying `k8s/pris-broker-events/` on a cluster |
 | [pris-calibration-server](../services/pris-calibration-server.md) 0.1.0 | done; an independent project, libraries from their git tags; image `luizcarloscf/pris-calibration-server:0.1.0` checked with Docker | deploying `k8s/pris-calibration-server/` on a cluster |
-| [Kubernetes](../deployment/kubernetes.md) | the namespace `pris`, RabbitMQ, Jaeger, the OpenTelemetry Collector and pris-calibration-server, checked with `kubectl apply --dry-run=client` | deploying on a cluster; a metrics backend |
+| [Kubernetes](../deployment/kubernetes.md) | the namespace `pris`, RabbitMQ, Jaeger, the OpenTelemetry Collector, pris-broker-events and pris-calibration-server, checked with `kubectl apply --dry-run=client` | deploying on a cluster; a metrics backend |
 | [Documentation](../index.md) | done | publishing the site |

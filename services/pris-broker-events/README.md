@@ -50,6 +50,8 @@ EOF
 uv run --project services/pris-broker-events pris-broker-events /tmp/options.json
 ```
 
+The image, built with `make image` in this folder or `make image SERVICE=pris-broker-events` at the repository root, runs with the cluster's options; on one host, mount your own over `/etc/pris-broker-events/options.json` (see [Docker images](../../docs/content/deployment/docker.md)). On Kubernetes, [`k8s/pris-broker-events/`](../../k8s/pris-broker-events/) runs it (see [Kubernetes](../../docs/content/deployment/kubernetes.md)).
+
 ## Development
 
 An independent project: its `pyproject.toml` takes the PRIS libraries from their git tags, and `uv.lock` pins them. From the repository root, with a broker running, `make test` and `make lint` run its tests and mypy too; in this folder, `uv run pytest` and `uv run mypy src`. The tests use the broker at `WIRE_RABBITMQ_URI` (default `amqp://guest:guest@localhost:5672`) and its management API at `RABBITMQ_MANAGEMENT_URI` (default `http://guest:guest@localhost:15672`). `make proto` regenerates `conf/options_pb2.py/.pyi` after editing `options.proto`.

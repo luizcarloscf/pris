@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pris-broker-events
+  namespace: pris
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: pris-broker-events
+  template:
+    metadata:
+      labels:
+        app: pris-broker-events
+    spec:
+      containers:
+        - name: pris-broker-events
+          image: luizcarloscf/pris-broker-events:0.1.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: LOG_LEVEL
+              value: INFO
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi

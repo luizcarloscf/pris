@@ -20,6 +20,7 @@ The `k8s/` folder has the manifests of the infrastructure and of the services, o
 | `rabbitmq/` | `rabbitmq:4.3.6-management`, configured by `rabbitmq/conf/` | `rabbitmq.pris`: AMQP 5672, management 80. Node ports: 31000 (AMQP), 31080 (management), 31001 (MQTT), 31002 (web MQTT) |
 | `jaeger/` | `jaegertracing/jaeger:2.22.0` | `jaeger.pris:4317` (OTLP gRPC); the UI on node port 31686 |
 | `otel-collector/` | `otel/opentelemetry-collector:0.163.2` | `otel-collector.pris`: 4317 (OTLP gRPC), 4318 (OTLP HTTP) |
+| `pris-broker-events/` | `luizcarloscf/pris-broker-events:0.1.0` | publishes `BrokerEvents.Consumers`; one instance (`Recreate`), since replicas would split its events |
 | `pris-calibration-server/` | `luizcarloscf/pris-calibration-server:0.1.0` | serves `CalibrationServer.GetCalibration` |
 
 The services' default options already use these names: the broker at `amqp://guest:guest@rabbitmq.pris`, and telemetry sent to `http://otel-collector.pris:4318`.
@@ -35,6 +36,7 @@ kubectl -n pris create configmap rabbitmq --from-file=k8s/rabbitmq/conf/ \
 kubectl apply -f k8s/rabbitmq/ -f k8s/jaeger/ -f k8s/otel-collector/
 kubectl -n pris create configmap pris-calibration-server-calibrations \
   --from-file=calibrations/labvisio/ --dry-run=client -o yaml | kubectl apply -f -
+kubectl apply -f k8s/pris-broker-events/
 kubectl apply -f k8s/pris-calibration-server/
 ```
 
