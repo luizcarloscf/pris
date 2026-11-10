@@ -1,0 +1,14 @@
+{
+  "broker_uri": "amqp://guest:guest@rabbitmq.pris",
+  "telemetry": {
+    "otlp_endpoint": "http://otel-collector.pris:4318",
+    "service_name": "pris-aruco-detector"
+  },
+  "camera_ids": [],
+  "queue_name": "ArUco.Detector",
+  "detector": {
+    "dictionary": "DICT_4X4_50",
+    "corner_refinement": "CORNER_REFINE_SUBPIX",
+    "cpu_threads": 1
+  }
+}

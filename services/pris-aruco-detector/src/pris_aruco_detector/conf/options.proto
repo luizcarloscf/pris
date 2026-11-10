@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package pris.aruco_detector;
+
+message TelemetryOptions {
+  // OTLP/HTTP collector endpoint (e.g.: 'http://otel-collector:4318'). Traces go to
+  // '<endpoint>/v1/traces' and metrics to '<endpoint>/v1/metrics'. Empty disables telemetry.
+  string otlp_endpoint = 1;
+  // 'service.name' resource attribute; empty takes OTEL_SERVICE_NAME, then
+  // 'pris-aruco-detector'.
+  string service_name = 2;
+}
+
+// Predefined marker dictionaries, named and numbered after OpenCV's cv2.aruco.DICT_*.
+enum ArucoDictionary {
+  DICT_4X4_50 = 0;
+  DICT_4X4_100 = 1;
+  DICT_4X4_250 = 2;
+  DICT_4X4_1000 = 3;
+  DICT_5X5_50 = 4;
+  DICT_5X5_100 = 5;
+  DICT_5X5_250 = 6;
+  DICT_5X5_1000 = 7;
+  DICT_6X6_50 = 8;
+  DICT_6X6_100 = 9;
+  DICT_6X6_250 = 10;
+  DICT_6X6_1000 = 11;
+  DICT_7X7_50 = 12;
+  DICT_7X7_100 = 13;
+  DICT_7X7_250 = 14;
+  DICT_7X7_1000 = 15;
+  DICT_ARUCO_ORIGINAL = 16;
+  DICT_APRILTAG_16h5 = 17;
+  DICT_APRILTAG_25h9 = 18;
+  DICT_APRILTAG_36h10 = 19;
+  DICT_APRILTAG_36h11 = 20;
+  DICT_ARUCO_MIP_36h12 = 21;
+}
+
+// Corner refinement, named after OpenCV's cv2.aruco.CORNER_REFINE_*.
+enum CornerRefinement {
+  // sub-pixel corners: the most accurate for pose estimation and triangulation.
+  CORNER_REFINE_SUBPIX = 0;
+  CORNER_REFINE_NONE = 1;
+  CORNER_REFINE_CONTOUR = 2;
+  CORNER_REFINE_APRILTAG = 3;
+}
+
+message DetectorOptions {
+  // dictionary of the markers to detect; markers of other dictionaries are ignored.
+  ArucoDictionary dictionary = 1;
+  // how corners are refined after detection.
+  CornerRefinement corner_refinement = 2;
+  // threads OpenCV may use (cv2.setNumThreads); 0 keeps OpenCV's default (one per core).
+  int32 cpu_threads = 3;
+}
+
+message ArucoDetectorOptions {
+  // broker uri (e.g.: 'amqp://guest:guest@localhost:5672').
+  string broker_uri = 1;
+  // traces and metrics export (OpenTelemetry).
+  TelemetryOptions telemetry = 2;
+  // cameras whose frames ('CameraGateway.<id>.Frame') are processed; empty means every camera.
+  repeated int64 camera_ids = 3;
+  // shared queue: replicas with the same name split the frames.
+  string queue_name = 4;
+  DetectorOptions detector = 5;
+}

@@ -13,6 +13,7 @@ nav = [
     { "pris-common" = "libraries/pris-common.md" },
   ] },
   { "Services" = [
+    { "pris-aruco-detector" = "services/pris-aruco-detector.md" },
     { "pris-broker-events" = "services/pris-broker-events.md" },
     { "pris-calibration-server" = "services/pris-calibration-server.md" },
     { "pris-frame-transformation" = "services/pris-frame-transformation.md" },
