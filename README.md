@@ -9,6 +9,7 @@ Python libraries, the services, and the ROS 2 packages that connect robots to it
 | [`packages/opentelemetry-instrumentation-pris-wire/`](packages/opentelemetry-instrumentation-pris-wire/) | OpenTelemetry tracing and metrics for pris-wire |
 | [`packages/pris-common/`](packages/pris-common/) | code shared by the services: camera calibrations and frame transformations fetched at startup |
 | [`services/pris-aruco-detector/`](services/pris-aruco-detector/) | detects ArUco markers in the cameras' frames |
+| [`services/pris-aruco-localization/`](services/pris-aruco-localization/) | localizes ArUco markers in the world from several cameras |
 | [`services/pris-broker-events/`](services/pris-broker-events/) | publishes the consumers of each topic |
 | [`services/pris-calibration-server/`](services/pris-calibration-server/) | serves the camera calibrations of a site |
 | [`services/pris-frame-transformation/`](services/pris-frame-transformation/) | the graph of coordinate frames and the transformation between any two |

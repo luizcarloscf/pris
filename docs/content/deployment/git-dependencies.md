@@ -32,6 +32,8 @@ override-dependencies = [
 ]
 ```
 
+An override replaces the requirement everywhere, extras included: a service that needs an extra of pris-msgs, such as `opencv`, writes it in the override too (`pris-msgs[opencv] @ git+...`).
+
 ## Releasing a library
 
 1. Change the library, its version in `pyproject.toml` (or `version.py` for the instrumentation) and its docs; `make test` and `make lint`.

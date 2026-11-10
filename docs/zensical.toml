@@ -14,6 +14,7 @@ nav = [
   ] },
   { "Services" = [
     { "pris-aruco-detector" = "services/pris-aruco-detector.md" },
+    { "pris-aruco-localization" = "services/pris-aruco-localization.md" },
     { "pris-broker-events" = "services/pris-broker-events.md" },
     { "pris-calibration-server" = "services/pris-calibration-server.md" },
     { "pris-frame-transformation" = "services/pris-frame-transformation.md" },

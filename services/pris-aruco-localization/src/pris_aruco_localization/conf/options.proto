@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package pris.aruco_localization;
+
+message TelemetryOptions {
+  // OTLP/HTTP collector endpoint (e.g.: 'http://otel-collector:4318'). Traces go to
+  // '<endpoint>/v1/traces' and metrics to '<endpoint>/v1/metrics'. Empty disables telemetry.
+  string otlp_endpoint = 1;
+  // 'service.name' resource attribute; empty takes OTEL_SERVICE_NAME, then
+  // 'pris-aruco-localization'.
+  string service_name = 2;
+}
+
+// Grouping of the detections of several cameras by capture instant.
+message SyncOptions {
+  // seconds: detections whose capture instants differ by up to this belong to the same
+  // instant.
+  double tolerance = 1;
+  // seconds after the first detection of an instant to wait for the other cameras.
+  double max_delay = 2;
+}
+
+message ArucoLocalizationOptions {
+  // broker uri (e.g.: 'amqp://guest:guest@localhost:5672').
+  string broker_uri = 1;
+  // traces and metrics export (OpenTelemetry).
+  TelemetryOptions telemetry = 2;
+  // frame the markers are localized in; every camera needs an extrinsic from it.
+  int64 reference_frame = 3;
+  // frame id of marker <id> is frame_id_offset + id.
+  int64 frame_id_offset = 4;
+  // markers to localize: marker id -> side length in meters. Other markers are ignored.
+  map<int64, double> markers = 5;
+  // cameras whose detections ('ArUco.<id>.Detection') are used; their calibrations are fetched
+  // from pris-calibration-server at startup.
+  repeated int64 camera_ids = 6;
+  SyncOptions sync = 7;
+  // pixels: a camera whose RMS reprojection error is above this is dropped as an outlier
+  // while other cameras remain.
+  double max_camera_error = 8;
+  // pixels: poses with a larger RMS reprojection error are not published; 0 publishes all.
+  double max_error = 9;
+  // poses seen by fewer cameras are not published.
+  uint32 min_cameras = 10;
+  // seconds a pose stays valid after its capture instant ('expiration').
+  double validity = 11;
+}
