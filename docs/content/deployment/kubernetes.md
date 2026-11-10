@@ -21,6 +21,7 @@ The `k8s/` folder has the manifests of the infrastructure and of the services, o
 | `jaeger/` | `jaegertracing/jaeger:2.22.0` | `jaeger.pris:4317` (OTLP gRPC); the UI on node port 31686 |
 | `otel-collector/` | `otel/opentelemetry-collector:0.163.2` | `otel-collector.pris`: 4317 (OTLP gRPC), 4318 (OTLP HTTP) |
 | `pris-aruco-detector/` | `luizcarloscf/pris-aruco-detector:0.1.0` | `ArUco.<id>.Detection` from `CameraGateway.<id>.Frame`; replicas split the frames |
+| `pris-aruco-localization/` | `luizcarloscf/pris-aruco-localization:0.1.0` | `ArUco.FrameTransformations` from the detections; one instance (`Recreate`) |
 | `pris-broker-events/` | `luizcarloscf/pris-broker-events:0.1.0` | publishes `BrokerEvents.Consumers`; one instance (`Recreate`), since replicas would split its events |
 | `pris-calibration-server/` | `luizcarloscf/pris-calibration-server:0.1.0` | serves `CalibrationServer.GetCalibration` |
 | `pris-frame-transformation/` | `luizcarloscf/pris-frame-transformation:0.1.0` | publishes `FrameTransformation.<ids>`, serves `FrameTransformation.GetTransformation`; one instance (`Recreate`) |
@@ -40,6 +41,7 @@ kubectl -n pris create configmap pris-calibration-server-calibrations \
   --from-file=calibrations/labvisio/ --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -f k8s/pris-broker-events/
 kubectl apply -f k8s/pris-aruco-detector/
+kubectl apply -f k8s/pris-aruco-localization/
 kubectl apply -f k8s/pris-calibration-server/
 kubectl apply -f k8s/pris-frame-transformation/
 ```
