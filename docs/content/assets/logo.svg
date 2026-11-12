@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 68 68" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <title>PRIS</title>
+  <path d="M32 6 L58 19 L58 45 L32 58 L6 45 L6 19 Z" stroke="#6366f1" stroke-width="3.5"/>
+  <path d="M6 45 L32 32 L58 45 M32 6 L32 32" stroke="#6366f1" stroke-width="2.5" opacity="0.5"/>
+  <path d="M6 19 L25.6 38.6 M58 19 L38.4 38.6 M32 6 L32 36" stroke="#14b8a6" stroke-width="2.5" stroke-dasharray="4 3.5"/>
+  <circle cx="32" cy="45" r="6.5" fill="#14b8a6"/>
+  <circle cx="6" cy="19" r="4.5" fill="#6366f1"/>
+  <circle cx="58" cy="19" r="4.5" fill="#6366f1"/>
+  <circle cx="32" cy="6" r="4.5" fill="#6366f1"/>
+</svg>
