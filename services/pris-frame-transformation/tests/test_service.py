@@ -116,6 +116,19 @@ def test_watched_paths_are_published_when_they_change(broker, labvisio, spans):
     assert span.attributes["pris.frame_transformation.published"] == ("FrameTransformation.100.0",)
 
 
+def test_a_new_subscriber_of_a_watched_topic_gets_it(broker):
+    listening = ConsumerList()
+    listening.info["FrameTransformation.1000.0"].consumers.append("a")
+    broker.publish(listening, "Consumers")
+    assert [m.topic for m in broker.step()] == ["FrameTransformation.1000.0"]
+    assert broker.service.step(timeout=0.2) == []
+
+    listening.info["FrameTransformation.1000.0"].consumers.append("b")
+    broker.publish(listening, "Consumers")
+
+    assert [m.topic for m in broker.step()] == ["FrameTransformation.1000.0"]
+
+
 def test_a_batch_publishes_each_path_once(broker):
     broker.publish(consumers("FrameTransformation.100.1"), "Consumers")
     broker.step()
@@ -152,6 +165,16 @@ def test_dynamic_edges_cant_replace_static_ones(broker):
 
     np.testing.assert_allclose(broker.service.graph.edges[(0, 1000)].matrix, static)
     assert (0, 1000) in broker.service.refused
+
+
+def test_a_marker_keeps_one_parent(broker):
+    broker.publish(transformations((100, 1000, np.eye(4), None)), "FrameTransformations")
+    broker.publish(transformations((100, 0, np.eye(4), None)), "FrameTransformations")
+    broker.step()
+
+    assert (100, 1000) in broker.service.graph.edges
+    assert (0, 100) not in broker.service.graph.edges
+    assert (0, 100) in broker.service.refused
 
 
 def test_bad_transformations_are_ignored(broker):

@@ -138,3 +138,55 @@ def test_remove():
     assert graph.remove(1000, 100)
     assert not graph.remove(1000, 100)
     assert pair(100, 1000) not in graph.edges
+
+
+def test_the_scenario_of_the_original_service():
+    cv = {i: rigid(0.4 * i, [i, -0.5 * i, 0.25 * i], axis=i % 3) for i in range(1, 8)}
+    graph = FrameGraph()
+    graph.set(Edge(1000, 1, cv[1], static=True))
+    graph.set(Edge(1001, 1, cv[2], static=True))
+    graph.set(Edge(1002, 2, cv[3], static=True))
+
+    result = graph.transformation([1001, 1000])
+    assert result.route == (1001, 1, 1000)
+    np.testing.assert_allclose(result.matrix, invert(cv[1]) @ cv[2], atol=1e-12)
+    assert graph.route([3000, 1000]) is None
+    assert graph.route([1000, 3000]) is None
+    assert graph.route([1000, 1002]) is None
+
+    graph.set(Edge(1000, 2, cv[4], static=True))
+    graph.set(Edge(1001, 2, cv[5], static=True))
+    graph.set(Edge(1001, 1004, cv[6], static=True))
+    graph.set(Edge(1001, 1004, cv[7], static=True))
+
+    result = graph.transformation([1000, 2, 1004])
+    assert result.route == (1000, 2, 1001, 1004)
+    np.testing.assert_allclose(result.matrix, cv[7] @ invert(cv[5]) @ cv[4], atol=1e-12)
+
+    assert graph.remove(1001, 1004)
+    assert not graph.remove(1001, 1004)
+    assert graph.route([1000, 2, 1004]) is None
+    graph.set(Edge(1001, 1004, cv[7], static=True))
+    assert graph.route([1000, 2, 1004]) == (1000, 2, 1001, 1004)
+
+
+def test_a_dynamic_frame_has_one_parent():
+    graph = room()
+    assert graph.parent(100) == 1000
+    assert not graph.set(Edge(100, 0, np.eye(4), stamp=5.5, expiration=6.5))
+    assert graph.set(Edge(100, 1000, np.eye(4), stamp=5.5, expiration=6.5))
+    assert graph.set(Edge(101, 100, np.eye(4), stamp=5.5))
+    assert graph.parent(1000) is None
+    graph.expire(now=6.5)
+    assert graph.set(Edge(100, 0, np.eye(4), stamp=7.0))
+    assert graph.parent(100) == 0
+    assert graph.route([101, 1]) == (101, 100, 0, 1000, 1)
+
+
+def test_an_older_stamp_doesnt_replace_a_newer_edge():
+    graph = room()
+    assert not graph.set(Edge(100, 1000, np.eye(4), stamp=4.9))
+    np.testing.assert_allclose(graph.edges[(100, 1000)].matrix, MARKER_TO_WORLD)
+    assert graph.set(Edge(100, 1000, np.eye(4), stamp=5.0))
+    graph.remove(100, 1000)
+    assert graph.set(Edge(100, 1000, np.eye(4), stamp=1.0))

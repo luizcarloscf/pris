@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 
 from pris_frame_transformation.graph import FrameGraph, Pair, Transformation
 
@@ -46,24 +46,33 @@ class Watches(object):
             prefix: the first word of a transformation topic.
         """
         self.prefix = prefix
-        self.paths: set[Path] = set()
+        self.consumers: dict[Path, set[str]] = {}
         self.published: dict[Path, tuple[tuple[Pair, int], ...]] = {}
 
-    def set_consumers(self, topics: Iterable[str]) -> tuple[set[Path], set[Path]]:
-        """Watch exactly the transformation topics among `topics`.
+    def set_consumers(self, consumers: Mapping[str, Iterable[str]]) -> tuple[set[Path], set[Path]]:
+        """Watch exactly the transformation topics among `consumers`.
+
+        A path with a new consumer is published again at the next `due`, so the newcomer gets it.
 
         Args:
-            topics: the keys of a ConsumerList.
+            consumers: the queues of each topic, as in a ConsumerList.
 
         Returns:
             The paths added and removed.
         """
-        paths = {path for path in (parse_topic(topic, self.prefix) for topic in topics)
-                 if path is not None}
-        added, removed = paths - self.paths, self.paths - paths
-        self.paths = paths
+        current: dict[Path, set[str]] = {}
+        for topic, queues in consumers.items():
+            path = parse_topic(topic, self.prefix)
+            if path is not None:
+                current[path] = set(queues)
+        added = set(current) - set(self.consumers)
+        removed = set(self.consumers) - set(current)
         for path in removed:
             self.published.pop(path, None)
+        for path in set(current) & set(self.consumers):
+            if current[path] - self.consumers[path]:
+                self.published.pop(path, None)
+        self.consumers = current
         return added, removed
 
     def due(self, graph: FrameGraph) -> list[tuple[Path, Transformation]]:
@@ -79,7 +88,7 @@ class Watches(object):
             The paths and their new transformations, in a stable order.
         """
         result = []
-        for path in sorted(self.paths):
+        for path in sorted(self.consumers):
             route = graph.route(path)
             if route is None:
                 self.published.pop(path, None)

@@ -86,18 +86,26 @@ class FrameGraph(object):
     def set(self, edge: Edge) -> bool:
         """Add or replace the edge between its two frames, bumping its version.
 
+        A dynamic edge goes from child (source) to parent (target), and a frame has one dynamic
+        parent at a time.
+
         Args:
             edge: the edge.
 
         Returns:
-            False, changing nothing, when a dynamic edge would replace a static one, or when its
-            source and target are the same frame.
+            False, changing nothing, for a self edge, or for a dynamic edge that would replace a
+            static or a later one, or give its source a second dynamic parent.
         """
         if edge.source == edge.target:
             return False
         key = pair(edge.source, edge.target)
         current = self.edges.get(key)
-        if current is not None and current.static and not edge.static:
+        if current is not None and not edge.static:
+            if current.static:
+                return False
+            if current.stamp is not None and edge.stamp is not None and edge.stamp < current.stamp:
+                return False
+        if not edge.static and self.parent(edge.source) not in (None, edge.target):
             return False
         self.edges[key] = edge
         self.neighbors.setdefault(edge.source, set()).add(edge.target)
@@ -122,6 +130,14 @@ class FrameGraph(object):
         self._counter += 1
         self.versions[key] = self._counter
         return True
+
+    def parent(self, frame: int) -> int | None:
+        """Return the dynamic parent of a frame, or None."""
+        for other in self.neighbors.get(frame, ()):
+            edge = self.edges[pair(frame, other)]
+            if not edge.static and edge.source == frame:
+                return other
+        return None
 
     def expire(self, now: float) -> list[Pair]:
         """Remove the edges whose expiration has passed.

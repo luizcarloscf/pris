@@ -120,7 +120,9 @@ class FrameTransformationService(object):
 
     def set_consumers(self, message: Message) -> None:
         """Watch the transformation topics of a ConsumerList."""
-        added, removed = self.watches.set_consumers(message.unpack(ConsumerList).info.keys())
+        info = message.unpack(ConsumerList).info
+        added, removed = self.watches.set_consumers(
+            {topic: info[topic].consumers for topic in info})
         for path in sorted(added):
             self.log.info("Watching {}", topic_for(path, self.watches.prefix))
         for path in sorted(removed):
@@ -130,8 +132,8 @@ class FrameTransformationService(object):
         """Add the dynamic edges of a FrameTransformations message.
 
         Returns:
-            How many edges were set; an unusable message, or an edge that would replace a static
-            one, is logged and ignored.
+            How many edges were set; an unusable message, or an edge the graph refuses, is logged
+            and ignored.
         """
         try:
             edges = self.dynamic_edges(message.unpack(FrameTransformations), message.created_at)
@@ -146,8 +148,8 @@ class FrameTransformationService(object):
             key = pair(edge.source, edge.target)
             if key not in self.refused:
                 self.refused.add(key)
-                self.log.warn("'{}': edge {} -> {} ignored (static or a self edge)",
-                              message.topic, edge.source, edge.target)
+                self.log.warn("'{}': edge {} -> {} ignored (static, older, a second parent or "
+                              "a self edge)", message.topic, edge.source, edge.target)
         return count
 
     def publish_due(self, links: list[Link], updated: int) -> list[Message]:

@@ -31,23 +31,27 @@ def graph():
     return result
 
 
+def listening(*topics, queue="queue"):
+    return {topic: [queue] for topic in topics}
+
+
 def due(watches, frames):
     return [path for path, _ in watches.due(frames)]
 
 
 def test_consumers_select_transformation_topics():
     watches = Watches()
-    added, removed = watches.set_consumers(
-        ["FrameTransformation.100.0", "ArUco.0.Detection", "FrameTransformation.0.1000"])
+    added, removed = watches.set_consumers(listening(
+        "FrameTransformation.100.0", "ArUco.0.Detection", "FrameTransformation.0.1000"))
     assert added == {(100, 0), (0, 1000)} and removed == set()
-    added, removed = watches.set_consumers(["FrameTransformation.0.1000"])
+    added, removed = watches.set_consumers(listening("FrameTransformation.0.1000"))
     assert added == set() and removed == {(100, 0)}
 
 
 def test_a_watched_path_is_due_once_until_it_changes():
     frames = graph()
     watches = Watches()
-    watches.set_consumers(["FrameTransformation.100.0", "FrameTransformation.1000.0"])
+    watches.set_consumers(listening("FrameTransformation.100.0", "FrameTransformation.1000.0"))
     assert due(watches, frames) == [(100, 0), (1000, 0)]
     assert due(watches, frames) == []
     frames.set(Edge(100, 1000, np.eye(4), stamp=1.1, expiration=2.1))
@@ -58,7 +62,7 @@ def test_a_watched_path_is_due_once_until_it_changes():
 def test_unresolved_paths_are_due_when_they_resolve():
     frames = graph()
     watches = Watches()
-    watches.set_consumers(["FrameTransformation.101.0"])
+    watches.set_consumers(listening("FrameTransformation.101.0"))
     assert due(watches, frames) == []
     frames.set(Edge(101, 1000, np.eye(4), stamp=1.0))
     assert due(watches, frames) == [(101, 0)]
@@ -67,7 +71,7 @@ def test_unresolved_paths_are_due_when_they_resolve():
 def test_a_path_that_expires_and_comes_back_is_due_again():
     frames = graph()
     watches = Watches()
-    watches.set_consumers(["FrameTransformation.100.0"])
+    watches.set_consumers(listening("FrameTransformation.100.0"))
     assert due(watches, frames) == [(100, 0)]
     frames.expire(now=2.0)
     assert due(watches, frames) == []
@@ -78,17 +82,17 @@ def test_a_path_that_expires_and_comes_back_is_due_again():
 def test_a_path_watched_again_is_due_again():
     frames = graph()
     watches = Watches()
-    watches.set_consumers(["FrameTransformation.1000.0"])
+    watches.set_consumers(listening("FrameTransformation.1000.0"))
     assert due(watches, frames) == [(1000, 0)]
-    watches.set_consumers([])
-    watches.set_consumers(["FrameTransformation.1000.0"])
+    watches.set_consumers({})
+    watches.set_consumers(listening("FrameTransformation.1000.0"))
     assert due(watches, frames) == [(1000, 0)]
 
 
 def test_due_returns_the_transformation():
     frames = graph()
     watches = Watches()
-    watches.set_consumers(["FrameTransformation.100.1000.0"])
+    watches.set_consumers(listening("FrameTransformation.100.1000.0"))
     (path, transformation), = watches.due(frames)
     assert path == (100, 1000, 0)
     assert transformation.route == (100, 1000, 0)
@@ -98,8 +102,19 @@ def test_due_returns_the_transformation():
 def test_another_prefix():
     watches = Watches(prefix="Tf")
 
-    added, _ = watches.set_consumers(["Tf.1.2", "FrameTransformation.3.4"])
+    added, _ = watches.set_consumers(listening("Tf.1.2", "FrameTransformation.3.4"))
 
     assert added == {(1, 2)}
     assert topic_for((1, 2), prefix="Tf") == "Tf.1.2"
     assert parse_topic("Tf.1.2") is None
+
+
+def test_a_new_consumer_of_a_watched_path_gets_it_again():
+    frames = graph()
+    watches = Watches()
+    watches.set_consumers(listening("FrameTransformation.1000.0"))
+    assert due(watches, frames) == [(1000, 0)]
+    watches.set_consumers({"FrameTransformation.1000.0": ["a", "b"]})
+    assert due(watches, frames) == [(1000, 0)]
+    watches.set_consumers({"FrameTransformation.1000.0": ["b"]})
+    assert due(watches, frames) == []
