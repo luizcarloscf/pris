@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pris-frame-transformation
+  namespace: pris
+data:
+  options.json: |-
+    {
+      "broker_uri": "amqp://guest:guest@rabbitmq.pris",
+      "telemetry": {
+        "otlp_endpoint": "http://otel-collector.pris:4318",
+        "service_name": "pris-frame-transformation"
+      },
+      "camera_ids": ["0", "1", "2", "3"]
+    }

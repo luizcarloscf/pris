@@ -26,7 +26,7 @@ It runs as one instance: replicas would split the events of the shared queue. Th
 
 ## Broker
 
-It needs the `rabbitmq_management` and `rabbitmq_event_exchange` plugins and the binding from `amq.rabbitmq.event` to `pris`. The broker of [`k8s/rabbitmq/`](../../k8s/rabbitmq/) has all three, and so does the local one of `make broker-up`, which runs with the same configuration.
+It needs the `rabbitmq_management` and `rabbitmq_event_exchange` plugins and the binding from `amq.rabbitmq.event` to `pris`. The broker of [`k8s/common/rabbitmq/`](../../k8s/common/rabbitmq/) has all three, and so does the local one of `make broker-up`, which runs with the same configuration.
 
 ## Options
 
@@ -50,7 +50,7 @@ EOF
 uv run --project services/pris-broker-events pris-broker-events /tmp/options.json
 ```
 
-The image, built with `make image` in this folder or `make image SERVICE=pris-broker-events` at the repository root, runs with the cluster's options; on one host, mount your own over `/etc/pris-broker-events/options.json` (see [Docker images](../../docs/content/deployment/docker.md)). On Kubernetes, [`k8s/pris-broker-events/`](../../k8s/pris-broker-events/) runs it (see [Kubernetes](../../docs/content/deployment/kubernetes.md)).
+The image, built with `make image` in this folder or `make image SERVICE=pris-broker-events` at the repository root, runs with the cluster's options; on one host, mount your own over `/etc/pris-broker-events/options.json` (see [Docker images](../../docs/content/deployment/docker.md)). On Kubernetes, [`k8s/labvisio/pris-broker-events/`](../../k8s/labvisio/pris-broker-events/) runs it (see [Kubernetes](../../docs/content/deployment/kubernetes.md)).
 
 ## Development
 

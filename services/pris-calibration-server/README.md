@@ -47,7 +47,7 @@ EOF
 uv run --project services/pris-calibration-server pris-calibration-server /tmp/options.json
 ```
 
-The image, built with `make image` in this folder or `make image SERVICE=pris-calibration-server` at the repository root, holds no calibrations: mount them at `/etc/calibrations`, and on one host your own options over `/etc/pris-calibration-server/options.json` (see [Docker images](../../docs/content/deployment/docker.md)). On Kubernetes, [`k8s/pris-calibration-server/`](../../k8s/pris-calibration-server/) mounts the ConfigMap `pris-calibration-server-calibrations`, created as [`calibrations/README.md`](../../calibrations/README.md) says (see [Kubernetes](../../docs/content/deployment/kubernetes.md)).
+The image, built with `make image` in this folder or `make image SERVICE=pris-calibration-server` at the repository root, holds no calibrations: mount them at `/etc/calibrations`, and on one host your own options over `/etc/pris-calibration-server/options.json` (see [Docker images](../../docs/content/deployment/docker.md)). On Kubernetes, [`k8s/labvisio/pris-calibration-server/`](../../k8s/labvisio/pris-calibration-server/) mounts the ConfigMap `pris-calibration-server-calibrations`, created as [`calibrations/README.md`](../../calibrations/README.md) says (see [Kubernetes](../../docs/content/deployment/kubernetes.md)).
 
 ## Development
 

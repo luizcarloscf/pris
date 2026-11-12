@@ -15,7 +15,7 @@ help:
 	@echo "lint         flake8 + mypy, packages and services"
 	@echo "build        build sdists and wheels into dist/"
 	@echo "image        build a service image locally: make image SERVICE=pris-calibration-server"
-	@echo "broker-up    start a local RabbitMQ, configured as k8s/rabbitmq (host network)"
+	@echo "broker-up    start a local RabbitMQ, configured as k8s/common/rabbitmq (host network)"
 	@echo "broker-down  stop the local RabbitMQ"
 	@echo "docs-serve   serve the documentation with live reload"
 	@echo "docs-build   build the documentation into docs/site (strict)"
@@ -49,7 +49,7 @@ image:
 
 broker-up:
 	docker run -d --rm --network host --name $(BROKER_NAME) \
-		-v $(CURDIR)/k8s/rabbitmq/conf:/etc/rabbitmq:ro $(BROKER_IMAGE)
+		-v $(CURDIR)/k8s/common/rabbitmq/conf:/etc/rabbitmq:ro $(BROKER_IMAGE)
 
 broker-down:
 	docker stop $(BROKER_NAME)

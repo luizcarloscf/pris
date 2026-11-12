@@ -1,23 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: pris-aruco-localization
+  name: pris-aruco-detector
   namespace: pris
 spec:
   replicas: 1
-  strategy:
-    type: Recreate
   selector:
     matchLabels:
-      app: pris-aruco-localization
+      app: pris-aruco-detector
   template:
     metadata:
       labels:
-        app: pris-aruco-localization
+        app: pris-aruco-detector
     spec:
       containers:
-        - name: pris-aruco-localization
-          image: luizcarloscf/pris-aruco-localization:0.1.0
+        - name: pris-aruco-detector
+          image: luizcarloscf/pris-aruco-detector:0.1.0
           imagePullPolicy: IfNotPresent
           env:
             - name: LOG_LEVEL
@@ -26,3 +24,10 @@ spec:
             limits:
               cpu: "1"
               memory: 256Mi
+          volumeMounts:
+            - name: options
+              mountPath: /etc/pris-aruco-detector
+      volumes:
+        - name: options
+          configMap:
+            name: pris-aruco-detector

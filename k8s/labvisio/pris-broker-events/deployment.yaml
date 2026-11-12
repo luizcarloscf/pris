@@ -26,3 +26,10 @@ spec:
             limits:
               cpu: 500m
               memory: 128Mi
+          volumeMounts:
+            - name: options
+              mountPath: /etc/pris-broker-events
+      volumes:
+        - name: options
+          configMap:
+            name: pris-broker-events

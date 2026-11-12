@@ -25,10 +25,15 @@ spec:
               cpu: 500m
               memory: 128Mi
           volumeMounts:
+            - name: options
+              mountPath: /etc/pris-calibration-server
             - name: calibrations
               mountPath: /etc/calibrations
               readOnly: true
       volumes:
+        - name: options
+          configMap:
+            name: pris-calibration-server
         - name: calibrations
           configMap:
             name: pris-calibration-server-calibrations

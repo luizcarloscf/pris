@@ -60,7 +60,7 @@ EOF
 uv run --project services/pris-aruco-detector pris-aruco-detector /tmp/options.json
 ```
 
-The image, built with `make image` in this folder or `make image SERVICE=pris-aruco-detector` at the repository root, runs with the cluster's options; on one host, mount your own over `/etc/pris-aruco-detector/options.json` (see [Docker images](../../docs/content/deployment/docker.md)). On Kubernetes, [`k8s/pris-aruco-detector/`](../../k8s/pris-aruco-detector/) runs it with replicas (see [Kubernetes](../../docs/content/deployment/kubernetes.md)).
+The image, built with `make image` in this folder or `make image SERVICE=pris-aruco-detector` at the repository root, runs with the cluster's options; on one host, mount your own over `/etc/pris-aruco-detector/options.json` (see [Docker images](../../docs/content/deployment/docker.md)). On Kubernetes, [`k8s/labvisio/pris-aruco-detector/`](../../k8s/labvisio/pris-aruco-detector/) runs it with replicas (see [Kubernetes](../../docs/content/deployment/kubernetes.md)).
 
 ## Development
 

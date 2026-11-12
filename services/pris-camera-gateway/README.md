@@ -76,7 +76,7 @@ docker run --rm --network host -v $PWD/options.json:/etc/pris-camera-gateway/opt
   luizcarloscf/pris-camera-gateway:0.1.0
 ```
 
-GigE Vision discovery and streaming need the host network. On Kubernetes, [`k8s/pris-camera-gateway/`](../../k8s/pris-camera-gateway/) has a ConfigMap and a Deployment per camera (0 to 3, at `10.20.6.<n>`), on the host network, with the `Recreate` strategy, since a camera accepts one connection.
+GigE Vision discovery and streaming need the host network. On Kubernetes, [`k8s/labvisio/pris-camera-gateway/`](../../k8s/labvisio/pris-camera-gateway/) has a ConfigMap and a Deployment per camera (0 to 3, at `10.20.6.<n>`), on the host network, with the `Recreate` strategy, since a camera accepts one connection.
 
 [`etc/examples/`](etc/examples/): `get_config.py`, `set_config.py`, `measure_sync.py` (the spread between cameras on `SOFTWARE_SCHEDULED`, from their `.Timestamp`) and `view_opencv.py` (a camera's frames through `SpinnakerCamera`, without a broker).
 

@@ -54,7 +54,7 @@ EOF
 uv run --project services/pris-frame-transformation pris-frame-transformation /tmp/options.json
 ```
 
-The image, built with `make image` in this folder or `make image SERVICE=pris-frame-transformation` at the repository root, runs with the cluster's options; on one host, mount your own over `/etc/pris-frame-transformation/options.json` (see [Docker images](../../docs/content/deployment/docker.md)). On Kubernetes, [`k8s/pris-frame-transformation/`](../../k8s/pris-frame-transformation/) runs it as one instance (see [Kubernetes](../../docs/content/deployment/kubernetes.md)).
+The image, built with `make image` in this folder or `make image SERVICE=pris-frame-transformation` at the repository root, runs with the cluster's options; on one host, mount your own over `/etc/pris-frame-transformation/options.json` (see [Docker images](../../docs/content/deployment/docker.md)). On Kubernetes, [`k8s/labvisio/pris-frame-transformation/`](../../k8s/labvisio/pris-frame-transformation/) runs it as one instance (see [Kubernetes](../../docs/content/deployment/kubernetes.md)).
 
 ## Development
 

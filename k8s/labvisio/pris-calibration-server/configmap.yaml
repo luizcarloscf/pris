@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pris-calibration-server
+  namespace: pris
+data:
+  options.json: |-
+    {
+      "broker_uri": "amqp://guest:guest@rabbitmq.pris",
+      "calibrations_path": "/etc/calibrations",
+      "telemetry": {
+        "otlp_endpoint": "http://otel-collector.pris:4318",
+        "service_name": "pris-calibration-server"
+      }
+    }

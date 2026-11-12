@@ -84,7 +84,7 @@ EOF
 uv run --project services/pris-aruco-localization pris-aruco-localization /tmp/options.json
 ```
 
-The image, built with `make image` in this folder or `make image SERVICE=pris-aruco-localization` at the repository root, runs with the cluster's options; on one host, mount your own over `/etc/pris-aruco-localization/options.json` (see [Docker images](../../docs/content/deployment/docker.md)). On Kubernetes, [`k8s/pris-aruco-localization/`](../../k8s/pris-aruco-localization/) runs it as one instance (see [Kubernetes](../../docs/content/deployment/kubernetes.md)).
+The image, built with `make image` in this folder or `make image SERVICE=pris-aruco-localization` at the repository root, runs with the cluster's options; on one host, mount your own over `/etc/pris-aruco-localization/options.json` (see [Docker images](../../docs/content/deployment/docker.md)). On Kubernetes, [`k8s/labvisio/pris-aruco-localization/`](../../k8s/labvisio/pris-aruco-localization/) runs it as one instance (see [Kubernetes](../../docs/content/deployment/kubernetes.md)).
 
 ## Development
 

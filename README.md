@@ -24,7 +24,7 @@ The libraries the services are built on. They form one uv workspace at the repos
 
 ## Services
 
-The programs that run on the space, each an independent project in `services/` with its own `uv.lock`, image and Kubernetes manifests in `k8s/`. Each README has the interface, options and how to run it.
+The programs that run on the space, each an independent project in `services/` with its own `uv.lock`, image and Kubernetes manifests in `k8s/labvisio/`. Each README has the interface, options and how to run it.
 
 | Service | Version | Does |
 |---|---|---|
@@ -40,7 +40,7 @@ The programs that run on the space, each an independent project in `services/` w
 | Folder | Contents |
 |---|---|
 | [`calibrations/`](calibrations/) | camera calibrations of each site |
-| [`k8s/`](k8s/) | Kubernetes manifests: the namespace `pris`, RabbitMQ, Jaeger, the OpenTelemetry Collector and the services |
+| [`k8s/`](k8s/) | Kubernetes manifests: `common/`, the namespace `pris`, RabbitMQ, Jaeger and the OpenTelemetry Collector; `labvisio/`, the services of the LabVISIO and their options |
 | [`docs/`](docs/) | the documentation site (Zensical) |
 
 ## Quick start
