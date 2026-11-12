@@ -1,6 +1,6 @@
 # pris-common
 
-Code shared by the PRIS services: fetching camera calibrations from pris-calibration-server and frame transformations from pris-frame-transformation, at startup. It holds what more than one service needs and isn't messaging ([pris-wire](../pris-wire/README.md)) or message schemas ([pris-msgs](../pris-msgs/README.md)). A high-level introduction, with runnable examples, is in the [documentation](../../docs/content/libraries/pris-common.md).
+Code shared by the PRIS services: fetching camera calibrations from [pris-calibration-server](../../services/pris-calibration-server/) and frame transformations from [pris-frame-transformation](../../services/pris-frame-transformation/), at startup. It holds what more than one service needs and isn't messaging ([pris-wire](../pris-wire/README.md)) or message schemas ([pris-msgs](../pris-msgs/README.md)). A high-level introduction, with runnable examples, is in the [documentation](../../docs/content/libraries/pris-common.md).
 
 ```shell
 pip install "pris-common @ git+https://github.com/luizcarloscf/pris@pris-common-v0.1.0#subdirectory=packages/pris-common"

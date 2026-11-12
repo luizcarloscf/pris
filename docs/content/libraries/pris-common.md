@@ -1,6 +1,6 @@
 # pris-common
 
-`pris-common` holds the code that more than one PRIS service needs and that isn't messaging ([pris-wire](pris-wire.md)) or message schemas ([pris-msgs](pris-msgs.md)): fetching camera calibrations from pris-calibration-server and frame transformations from pris-frame-transformation, at startup, and any other request that waits for its reply.
+`pris-common` holds the code that more than one PRIS service needs and that isn't messaging ([pris-wire](pris-wire.md)) or message schemas ([pris-msgs](pris-msgs.md)): fetching camera calibrations from [pris-calibration-server](../services/pris-calibration-server.md) and frame transformations from [pris-frame-transformation](../services/pris-frame-transformation.md), at startup, and any other request that waits for its reply.
 
 ## Camera calibrations
 

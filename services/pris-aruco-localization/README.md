@@ -1,6 +1,6 @@
 # pris-aruco-localization
 
-Localizes ArUco markers in the world. It takes the corners that pris-aruco-detector finds in each camera, groups the detections of the same capture instant, and computes one pose per marker from every camera that sees it. A single camera gives a poor pose for a small or distant marker: depth is uncertain, and the marker's orientation can flip; combining cameras fixes both (see [Accuracy](#accuracy)). A high-level introduction, with a runnable example, is in the [documentation](../../docs/content/services/pris-aruco-localization.md).
+Localizes ArUco markers in the world. It takes the corners that [pris-aruco-detector](../pris-aruco-detector/) finds in each camera, groups the detections of the same capture instant, and computes one pose per marker from every camera that sees it. A single camera gives a poor pose for a small or distant marker: depth is uncertain, and the marker's orientation can flip; combining cameras fixes both (see [Accuracy](#accuracy)). A high-level introduction, with a runnable example, is in the [documentation](../../docs/content/services/pris-aruco-localization.md).
 
 ## Interface
 
@@ -20,7 +20,7 @@ One `ArUco.FrameTransformations` per capture instant, even when no marker is loc
 | `tf` | 4×4, marker to reference; its last column is the marker's center |
 | `expiration` | the capture instant plus `validity` |
 
-The message's `created_at` is the mean capture instant of the detections it combines. The marker frame is OpenCV's: origin at the center of the marker, x to the right, y up, z out of the printed face; its corners are top-left (−L/2, L/2, 0), top-right (L/2, L/2, 0), bottom-right (L/2, −L/2, 0) and bottom-left (−L/2, −L/2, 0), the order pris-aruco-detector publishes them. pris-frame-transformation takes these poses as dynamic edges.
+The message's `created_at` is the mean capture instant of the detections it combines. The marker frame is OpenCV's: origin at the center of the marker, x to the right, y up, z out of the printed face; its corners are top-left (−L/2, L/2, 0), top-right (L/2, L/2, 0), bottom-right (L/2, −L/2, 0) and bottom-left (−L/2, −L/2, 0), the order pris-aruco-detector publishes them. [pris-frame-transformation](../pris-frame-transformation/) takes these poses as dynamic edges.
 
 ## How it works
 
@@ -73,7 +73,7 @@ A pose takes about 1.5 ms per marker. Real cameras add calibration error, blur a
 
 ## Running
 
-It needs pris-calibration-server, and pris-aruco-detector for real detections. With a local broker (`make broker-up`), from the repository root:
+It needs [pris-calibration-server](../pris-calibration-server/), and pris-aruco-detector for real detections. With a local broker (`make broker-up`), from the repository root:
 
 ```shell
 cat > /tmp/options.json <<EOF

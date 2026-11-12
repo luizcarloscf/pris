@@ -51,7 +51,7 @@ kubectl apply -R -f k8s/labvisio/
 `k8s/common/rabbitmq/conf/` holds RabbitMQ's plugins (`enabled_plugins`), configuration (`rabbitmq.conf`) and definitions (`definitions.json`), loaded at startup; the ConfigMap `rabbitmq` is created from that folder, as above. The local broker of `make broker-up` mounts the same folder, so local and cluster brokers behave alike:
 
 - **Plugins:** management, MQTT and web MQTT (MQTT messages go to the `pris` exchange), top, and the event exchange.
-- **Definitions:** the `guest` user, allowed from other hosts; the `pris` topic exchange; and every broker event (`amq.rabbitmq.event`, from the event exchange plugin) forwarded into `pris`, so that pris-broker-events can follow the `binding.*` events to keep its list of consumers.
+- **Definitions:** the `guest` user, allowed from other hosts; the `pris` topic exchange; and every broker event (`amq.rabbitmq.event`, from the event exchange plugin) forwarded into `pris`, so that [pris-broker-events](../services/pris-broker-events.md) can follow the `binding.*` events to keep its list of consumers.
 - **Policy:** every queue holds at most 64 messages and 10 MiB, so a consumer that stops doesn't fill the broker's memory.
 
 ## Telemetry
@@ -60,6 +60,6 @@ The services send traces and metrics over OTLP/HTTP to `otel-collector`, which f
 
 ## Options and calibrations
 
-Each service folder of the site has a `configmap.yaml` with the service's `options.json`, mounted over its image's `/etc/<service>/options.json`; it starts as a copy of `services/<service>/etc/conf/options.json`. A service reads its options once, so after editing one, apply it and restart the service: `kubectl apply -f k8s/labvisio/<service>/configmap.yaml` and `kubectl -n pris rollout restart deployment/<service>`. pris-frame-transformation and pris-aruco-localization should list the same `camera_ids`.
+Each service folder of the site has a `configmap.yaml` with the service's `options.json`, mounted over its image's `/etc/<service>/options.json`; it starts as a copy of `services/<service>/etc/conf/options.json`. A service reads its options once, so after editing one, apply it and restart the service: `kubectl apply -f k8s/labvisio/<service>/configmap.yaml` and `kubectl -n pris rollout restart deployment/<service>`. [pris-frame-transformation](../services/pris-frame-transformation.md) and [pris-aruco-localization](../services/pris-aruco-localization.md) should list the same `camera_ids`.
 
-pris-calibration-server reads the calibrations of one site from the ConfigMap `pris-calibration-server-calibrations`, mounted at `/etc/calibrations`; the command above creates or updates it from `calibrations/<site>/`. The server reads them once, so restart it after a change: `kubectl -n pris rollout restart deployment/pris-calibration-server`.
+[pris-calibration-server](../services/pris-calibration-server.md) reads the calibrations of one site from the ConfigMap `pris-calibration-server-calibrations`, mounted at `/etc/calibrations`; the command above creates or updates it from `calibrations/<site>/`. The server reads them once, so restart it after a change: `kubectl -n pris rollout restart deployment/pris-calibration-server`.

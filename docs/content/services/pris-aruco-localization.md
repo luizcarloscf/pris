@@ -1,6 +1,6 @@
 # pris-aruco-localization
 
-A camera alone gives a poor pose for a small or distant marker: its depth is uncertain, and its orientation can flip. `pris-aruco-localization` combines every camera that sees a marker at the same capture instant, from the corners pris-aruco-detector finds, and publishes each marker's pose in the world. With the four cameras of the LabVISIO, a 0.2 m marker is localized within a few millimeters and about a degree.
+A camera alone gives a poor pose for a small or distant marker: its depth is uncertain, and its orientation can flip. `pris-aruco-localization` combines every camera that sees a marker at the same capture instant, from the corners [pris-aruco-detector](pris-aruco-detector.md) finds, and publishes each marker's pose in the world. With the four cameras of the LabVISIO, a 0.2 m marker is localized within a few millimeters and about a degree.
 
 !!! info "New to multi-view geometry?"
 

@@ -1,13 +1,13 @@
 # pris-frame-transformation
 
-Keeps the graph of the coordinate frames of the space and gives the transformation between any two of them: published to whoever listens, or on request. The graph holds two kinds of edges: static ones, the camera extrinsics from pris-calibration-server, and dynamic ones, every transformation published on a `*.FrameTransformations` topic, such as the markers of pris-aruco-localization. Like ROS's tf2 buffer, it only composes the edges it is given: combining several estimates of the same thing is the job of whoever publishes the edge. A high-level introduction, with a runnable example, is in the [documentation](../../docs/content/services/pris-frame-transformation.md).
+Keeps the graph of the coordinate frames of the space and gives the transformation between any two of them: published to whoever listens, or on request. The graph holds two kinds of edges: static ones, the camera extrinsics from [pris-calibration-server](../pris-calibration-server/), and dynamic ones, every transformation published on a `*.FrameTransformations` topic, such as the markers of [pris-aruco-localization](../pris-aruco-localization/). Like ROS's tf2 buffer, it only composes the edges it is given: combining several estimates of the same thing is the job of whoever publishes the edge. A high-level introduction, with a runnable example, is in the [documentation](../../docs/content/services/pris-frame-transformation.md).
 
 ## Interface
 
 | | Topic | Message |
 |---|---|---|
 | Consumes | `#.FrameTransformations` | `pris.vision.FrameTransformations`: dynamic edges |
-| Consumes | `BrokerEvents.Consumers` | `pris.common.ConsumerList`, from pris-broker-events: who listens |
+| Consumes | `BrokerEvents.Consumers` | `pris.common.ConsumerList`, from [pris-broker-events](../pris-broker-events/): who listens |
 | Publishes | `FrameTransformation.<source>[.<hint>...].<target>` | `pris.vision.FrameTransformation`, whenever it changes |
 | Serves | `FrameTransformation.GetTransformation` | `pris.vision.GetTransformationRequest` (pairs, without hints) → `pris.vision.GetTransformationReply`, in their order |
 

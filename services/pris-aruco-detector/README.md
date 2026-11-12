@@ -1,6 +1,6 @@
 # pris-aruco-detector
 
-Detects [ArUco](https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html) markers on the cameras' frames, and publishes, for each frame, the id and the four corners of every marker it finds, in pixels. It only detects: it computes no pose and needs no calibration. Turning corners into positions in the space, by combining the cameras that see the same marker, is pris-aruco-localization's job. A high-level introduction, with a runnable example, is in the [documentation](../../docs/content/services/pris-aruco-detector.md).
+Detects [ArUco](https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html) markers on the cameras' frames, and publishes, for each frame, the id and the four corners of every marker it finds, in pixels. It only detects: it computes no pose and needs no calibration. Turning corners into positions in the space, by combining the cameras that see the same marker, is [pris-aruco-localization](../pris-aruco-localization/)'s job. A high-level introduction, with a runnable example, is in the [documentation](../../docs/content/services/pris-aruco-detector.md).
 
 ## Interface
 

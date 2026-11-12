@@ -26,7 +26,7 @@ END
 uv run --project services/pris-aruco-detector pris-aruco-detector /tmp/options.json
 ```
 
-With pris-camera-gateway publishing frames, listen to the detections of every camera in another terminal:
+With [pris-camera-gateway](pris-camera-gateway.md) publishing frames, listen to the detections of every camera in another terminal:
 
 ```python
 from pris_msgs.image_pb2 import ObjectAnnotations
