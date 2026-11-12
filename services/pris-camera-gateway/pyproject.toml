@@ -1,0 +1,57 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pris-camera-gateway"
+version = "0.1.0"
+description = "Publishes the frames of Blackfly and Blackfly S GigE cameras through the Spinnaker SDK"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "labvisio", email = "labvisio.ufes@gmail.com" }]
+maintainers = [{ name = "Luiz Carlos Cosmi Filho", email = "luizcarloscosmifilho@gmail.com" }]
+requires-python = "==3.12.*"
+dependencies = [
+    "pris-msgs[opencv,turbojpeg]>=1.0.0,<2",
+    "pris-wire>=1.0.0,<2",
+    "opentelemetry-api~=1.45",
+    "opentelemetry-instrumentation-pris-wire[otlp]>=0.1.0,<0.2",
+    "spinnaker-python==4.4.0.246",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+]
+
+[project.scripts]
+pris-camera-gateway = "pris_camera_gateway.main:main"
+
+[tool.uv.sources]
+spinnaker-python = { path = "etc/spinnaker/spinnaker_python-4.4.0.246-cp312-cp312-linux_x86_64.whl" }
+pris-msgs = { git = "https://github.com/luizcarloscf/pris", tag = "pris-msgs-v1.0.0", subdirectory = "packages/pris-msgs" }
+pris-wire = { git = "https://github.com/luizcarloscf/pris", tag = "pris-wire-v1.0.0", subdirectory = "packages/pris-wire" }
+opentelemetry-instrumentation-pris-wire = { git = "https://github.com/luizcarloscf/pris", tag = "opentelemetry-instrumentation-pris-wire-v0.1.0", subdirectory = "packages/opentelemetry-instrumentation-pris-wire" }
+
+[dependency-groups]
+dev = [
+    "pytest==8.3.5",
+    "flake8==7.2.0",
+    "mypy==2.4.1",
+    "grpcio-tools==1.85.1",
+    "opentelemetry-sdk==1.45.2",
+    "opentelemetry-test-utils==0.66b2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pris_camera_gateway"]
+
+[tool.pytest.ini_options]
+addopts = "--import-mode=importlib"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+exclude = ['_pb2\.pyi?$']

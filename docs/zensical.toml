@@ -17,6 +17,7 @@ nav = [
     { "pris-aruco-localization" = "services/pris-aruco-localization.md" },
     { "pris-broker-events" = "services/pris-broker-events.md" },
     { "pris-calibration-server" = "services/pris-calibration-server.md" },
+    { "pris-camera-gateway" = "services/pris-camera-gateway.md" },
     { "pris-frame-transformation" = "services/pris-frame-transformation.md" },
   ] },
   { "Deployment" = [

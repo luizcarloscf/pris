@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package pris.camera_gateway;
+
+import "pris_msgs/camera.proto";
+
+// Bayer interpolation done by the gateway, named after Spinnaker's color processing algorithms.
+enum ColorProcessingAlgorithm {
+  NONE = 0;
+  NEAREST_NEIGHBOR = 1;
+  NEAREST_NEIGHBOR_AVG = 2;
+  EDGE_SENSING = 3;
+  HQ_LINEAR = 4;
+  BILINEAR = 5;
+  DIRECTIONAL_FILTER = 6;
+  WEIGHTED_DIRECTIONAL_FILTER = 7;
+  RIGOROUS = 8;
+  IPP = 9;
+}
+
+enum TriggerMode {
+  // the camera triggers itself at its own frame rate: cameras are not aligned.
+  FREE_RUN = 0;
+  // the gateway triggers the camera at the instants 'k * period + delay' of the host clock.
+  SOFTWARE_SCHEDULED = 1;
+}
+
+message CameraOptions {
+  // camera id: topics 'CameraGateway.<id>.Frame', '.Timestamp', '.GetConfig', '.SetConfig'.
+  uint32 id = 1;
+  // IPv4 address of the camera (e.g.: '10.20.6.0').
+  string ip = 2;
+  TriggerMode trigger_mode = 3;
+  // Bayer interpolation done by the gateway; not used with onboard_color_processing.
+  ColorProcessingAlgorithm algorithm = 4;
+  // the camera interpolates the Bayer image itself (three times the data on the network).
+  bool onboard_color_processing = 5;
+  // JPEG encoding with libjpeg-turbo instead of OpenCV.
+  bool use_turbojpeg = 6;
+  // bytes per GigE Vision stream packet ('GevSCPSPacketSize').
+  int32 packet_size = 7;
+  // ticks of 8 ns between stream packets ('GevSCPD').
+  int32 packet_delay = 8;
+  // ask the camera to resend lost packets.
+  bool packet_resend = 9;
+  // milliseconds to wait for resent packets after the image trailer.
+  int32 packet_resend_timeout = 10;
+  // resend requests per image, 1 to 5 ('StreamPacketResendMaxRequests').
+  int32 packet_resend_max_requests = 11;
+  // flip the image horizontally, on the camera, before the region of interest.
+  bool reverse_x = 12;
+  // configuration applied at startup, as a SetConfig would; it must set sampling.frequency.
+  pris.vision.CameraConfig initial_config = 13;
+  // seconds the camera gets after initial_config before streaming.
+  double settle_time = 14;
+  // seconds between estimates of the camera clock against the host's.
+  double clock_sync_period = 15;
+  // latches of the camera clock per estimate; the one with the shortest round trip is kept.
+  uint32 latch_samples = 16;
+}
+
+message TelemetryOptions {
+  // OTLP/HTTP collector endpoint (e.g.: 'http://otel-collector:4318'). Traces go to
+  // '<endpoint>/v1/traces' and metrics to '<endpoint>/v1/metrics'. Empty disables telemetry.
+  string otlp_endpoint = 1;
+  // 'service.name' resource attribute; empty takes OTEL_SERVICE_NAME, then
+  // 'pris-camera-gateway'.
+  string service_name = 2;
+}
+
+message CameraGatewayOptions {
+  // broker uri (e.g.: 'amqp://guest:guest@localhost:5672').
+  string broker_uri = 1;
+  // traces and metrics export (OpenTelemetry).
+  TelemetryOptions telemetry = 2;
+  CameraOptions camera = 3;
+}

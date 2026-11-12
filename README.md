@@ -12,6 +12,7 @@ Python libraries, the services, and the ROS 2 packages that connect robots to it
 | [`services/pris-aruco-localization/`](services/pris-aruco-localization/) | localizes ArUco markers in the world from several cameras |
 | [`services/pris-broker-events/`](services/pris-broker-events/) | publishes the consumers of each topic |
 | [`services/pris-calibration-server/`](services/pris-calibration-server/) | serves the camera calibrations of a site |
+| [`services/pris-camera-gateway/`](services/pris-camera-gateway/) | publishes the frames of a Blackfly GigE camera and serves its settings |
 | [`services/pris-frame-transformation/`](services/pris-frame-transformation/) | the graph of coordinate frames and the transformation between any two |
 | [`calibrations/`](calibrations/) | camera calibrations of each site |
 | [`k8s/`](k8s/) | Kubernetes manifests: the namespace `pris`, RabbitMQ, Jaeger, the OpenTelemetry Collector and the services |
