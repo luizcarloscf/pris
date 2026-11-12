@@ -7,6 +7,14 @@ ArUco markers are square black-and-white codes, each with an id, that a camera c
     - [Detection of ArUco markers](https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html): OpenCV's tutorial on the dictionaries, the detection and the corners;
     - [ArUco marker generator](https://chev.me/arucogen/): print markers of the dictionary the service looks for, `DICT_4X4_50` by default.
 
+## Where it fits
+
+```mermaid
+flowchart LR
+  gateway("pris-camera-gateway<br>one per camera") -->|"CameraGateway.#lt;id#gt;.Frame"| detector("pris-aruco-detector<br>replicas")
+  detector -->|"ArUco.#lt;id#gt;.Detection"| localization("pris-aruco-localization")
+```
+
 ## Detecting markers
 
 With the local broker of `make broker-up`, start the service from the repository root:
@@ -18,7 +26,7 @@ END
 uv run --project services/pris-aruco-detector pris-aruco-detector /tmp/options.json
 ```
 
-In another terminal, listen to the detections of every camera:
+With pris-camera-gateway publishing frames, listen to the detections of every camera in another terminal:
 
 ```python
 from pris_msgs.image_pb2 import ObjectAnnotations
@@ -32,25 +40,6 @@ for marker in message.unpack(ObjectAnnotations).objects:
     print(message.topic, marker.id, [(round(v.x), round(v.y)) for v in marker.region.vertices])
 # ArUco.0.Detection 7 [(400, 250), (519, 250), (519, 369), (400, 369)]
 # ArUco.0.Detection 3 [(100, 80), (219, 80), (219, 199), (100, 199)]
-channel.close()
-```
-
-In a third, stand in for camera 0's gateway with a frame that holds markers 3 and 7 (it needs OpenCV, as in `uv run --project services/pris-aruco-detector python camera.py`):
-
-```python
-import cv2
-import numpy as np
-from pris_msgs.image_pb2 import Image
-from pris_wire.core import Channel, Message
-
-dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
-pixels = np.full((480, 640), 255, dtype=np.uint8)            # a white frame
-pixels[80:200, 100:220] = cv2.aruco.generateImageMarker(dictionary, 3, 120)
-pixels[250:370, 400:520] = cv2.aruco.generateImageMarker(dictionary, 7, 120)
-
-channel = Channel("amqp://guest:guest@localhost:5672")
-_, data = cv2.imencode(".png", pixels)
-channel.publish(Message(content=Image(data=data.tobytes())), topic="CameraGateway.0.Frame")
 channel.close()
 ```
 

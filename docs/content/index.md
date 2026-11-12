@@ -10,6 +10,21 @@ Every component talks to the others through a message broker ([RabbitMQ](https:/
 
 Components only share topic names and message types, so each one can be added, replaced, or scaled without changing the others. Every component is a container image, with Kubernetes manifests to run them together.
 
+## The services
+
+Solid arrows are topics, from publisher to consumer; dashed arrows are requests, from caller to server.
+
+```mermaid
+flowchart LR
+  gateway("pris-camera-gateway") -->|"Frame"| detector("pris-aruco-detector")
+  detector -->|"Detection"| localization("pris-aruco-localization")
+  localization -->|"FrameTransformations"| frames("pris-frame-transformation")
+  events("pris-broker-events") -->|"Consumers"| frames
+  localization -.->|"GetCalibration"| calibration("pris-calibration-server")
+  localization -.->|"GetTransformation"| frames
+  frames -.->|"GetCalibration"| calibration
+```
+
 ## Where to start
 
 <div class="grid cards" markdown>

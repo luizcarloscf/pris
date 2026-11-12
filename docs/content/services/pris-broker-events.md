@@ -7,9 +7,19 @@ Which cameras are online? Does anyone serve a topic, or listen to it? `pris-brok
     - [Event exchange plugin](https://www.rabbitmq.com/docs/event-exchange): the broker publishes its own events, such as `binding.created`, as messages;
     - [Management plugin](https://www.rabbitmq.com/docs/management): the HTTP API that lists the bindings at startup.
 
+## Where it fits
+
+```mermaid
+flowchart LR
+  events("pris-broker-events") -.->|"GET /api/bindings, at startup"| broker[("RabbitMQ")]
+  broker -->|"binding.created / binding.deleted"| events
+  events -->|"BrokerEvents.Consumers"| frames("pris-frame-transformation")
+  events -->|"BrokerEvents.Consumers"| client("any program")
+```
+
 ## Finding the cameras online
 
-The examples run as is, with the local broker of `make broker-up`, which has the plugins the service needs. Start the service from the repository root:
+With the local broker of `make broker-up`, which has the plugins the service needs, start the service from the repository root:
 
 ```shell
 cat > /tmp/options.json <<END
@@ -19,18 +29,7 @@ END
 uv run --project services/pris-broker-events pris-broker-events /tmp/options.json
 ```
 
-In another terminal, stand in for the gateways of cameras 0 and 2, which serve `CameraGateway.<id>.GetConfig`:
-
-```python
-from pris_wire.core import Channel, Subscription
-
-channel = Channel("amqp://guest:guest@localhost:5672")
-Subscription(channel, name="CameraGateway.0.GetConfig")  # as camera 0's gateway does
-Subscription(channel, name="CameraGateway.2.GetConfig")
-channel.consume()                                       # stays until interrupted
-```
-
-In a third, find the cameras from the topics their gateways serve:
+With the gateways of cameras 0 and 2 running, find the cameras online in another terminal, from the topics their gateways serve:
 
 ```python
 import re

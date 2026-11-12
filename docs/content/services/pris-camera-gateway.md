@@ -8,6 +8,16 @@ Every other service starts from the cameras' frames. `pris-camera-gateway` conne
     - [Understanding color interpolation](https://www.flir.eu/support-center/iis/machine-vision/application-note/understanding-color-interpolation/): the Bayer image and how it becomes color;
     - [Troubleshooting image consistency errors](https://www.flir.com/support-center/iis/machine-vision/application-note/troubleshooting-image-consistency-errors/): lost and incomplete images, and the network settings behind them.
 
+## Where it fits
+
+```mermaid
+flowchart LR
+  camera["Blackfly camera"] -->|"GigE Vision"| gateway("pris-camera-gateway")
+  gateway -->|"CameraGateway.#lt;id#gt;.Frame"| detector("pris-aruco-detector")
+  gateway -->|"CameraGateway.#lt;id#gt;.Timestamp"| measure("measure_sync.py")
+  client("any program") -.->|"CameraGateway.#lt;id#gt;.GetConfig / SetConfig"| gateway
+```
+
 ## Reading a camera
 
 The image needs the SDK, downloaded by hand (see the README). With it built, start the gateway next to the camera, on the host network, with options for the local broker:
@@ -38,6 +48,22 @@ channel.close()
 ```
 
 On `FREE_RUN` the camera triggers itself at its frame rate; on `SOFTWARE_SCHEDULED` the gateway triggers it at `k × period + delay` of the host clock, so cameras on hosts with synced clocks capture together, and a `SetConfig` of `sampling.delay` shifts one of them inside the period.
+
+On `SOFTWARE_SCHEDULED`, everything happens on one thread, so a setting never changes while an image is grabbed:
+
+```mermaid
+sequenceDiagram
+  participant B as broker
+  participant G as pris-camera-gateway
+  participant C as camera
+  loop every period
+    B->>G: GetConfig and SetConfig, until 2 ms before the instant
+    Note over G: busy-waits to k × period + delay
+    G->>C: TriggerSoftware
+    C-->>G: the image, within a period
+    G->>B: .Frame and .Timestamp, stamped with the capture instant
+  end
+```
 
 ## Reference
 

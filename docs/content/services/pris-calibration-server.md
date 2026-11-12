@@ -9,6 +9,15 @@ Every camera of a site has a calibration: how it forms an image (intrinsics and 
     - [Camera calibration tutorial](https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html): the camera matrix, distortion coefficients, and how they are estimated;
     - [Camera calibration and 3D reconstruction](https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html): the pinhole model the intrinsics and extrinsics follow.
 
+## Where it fits
+
+```mermaid
+flowchart LR
+  files[("calibrations/#lt;site#gt;/#lt;id#gt;.json")] -->|"at startup"| server("pris-calibration-server")
+  localization("pris-aruco-localization") -.->|"CalibrationServer.GetCalibration"| server
+  frames("pris-frame-transformation") -.->|"CalibrationServer.GetCalibration"| server
+```
+
 ## Serving the calibrations
 
 The calibrations of each site are kept in the repository, in `calibrations/<site>/`, one `<id>.json` per camera. With a broker on `localhost` (`make broker-up` in this repository), serve those of the LabVISIO from the repository root:

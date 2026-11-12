@@ -7,6 +7,26 @@ Where is a marker, in the coordinates of a camera? Where is camera 0, seen from 
     - [tf2 concepts](https://docs.ros.org/en/humble/Concepts/Intermediate/About-Tf2.html): the ROS library this service resembles, a tree of frames and the transformations between them;
     - [Rigid transformations](https://en.wikipedia.org/wiki/Rigid_transformation): the 4×4 matrices `[R t; 0 1]` the edges hold.
 
+## Where it fits
+
+```mermaid
+flowchart LR
+  frames("pris-frame-transformation") -.->|"CalibrationServer.GetCalibration, at startup"| calibration("pris-calibration-server")
+  localization("pris-aruco-localization") -->|"ArUco.FrameTransformations"| frames
+  events("pris-broker-events") -->|"BrokerEvents.Consumers"| frames
+  frames -->|"FrameTransformation.#lt;source#gt;.#lt;target#gt;"| subscriber("any subscriber")
+  client("any program") -.->|"FrameTransformation.GetTransformation"| frames
+```
+
+The graph of the LabVISIO, with marker 0 on the floor. The calibrations give the solid edges, each camera to the world; a marker's pose is a dashed, dynamic edge, which expires:
+
+```mermaid
+flowchart TD
+  world(("1000<br>world"))
+  world --- c0(("0")) & c1(("1")) & c2(("2")) & c3(("3"))
+  world -.- marker(("100<br>marker 0"))
+```
+
 ## Watching and asking
 
 The service needs [pris-calibration-server](pris-calibration-server.md) for the static edges and [pris-broker-events](pris-broker-events.md) to know who listens: start both as their pages show, with the local broker of `make broker-up`, then the service, from the repository root:
@@ -48,6 +68,32 @@ channel.close()
 ```
 
 Here both routes go through the world, frame 1000: camera 0 → world → camera 1. A marker published by a localization service joins the graph the same way, and `FrameTransformation.<marker>.<camera>` follows it as it moves.
+
+## Several worlds
+
+A space can have more than one world, such as a room and a corridor, each with its own cameras calibrated in its own frame. Every extrinsic is a static edge, so a camera calibrated in two worlds links them. Calibrate the cameras that see the door once more, in a transition world, and the graph connects the room and the corridor through it:
+
+```mermaid
+flowchart LR
+  subgraph room ["Room"]
+    room_world(("1000<br>room")) --- c0(("0")) & c1(("1")) & c2(("2"))
+  end
+  subgraph transition ["Transition, at the door"]
+    transition_world(("3000<br>transition")) --- c3(("3")) & c4(("4"))
+  end
+  subgraph corridor ["Corridor"]
+    corridor_world(("2000<br>corridor")) --- c5(("5")) & c6(("6"))
+  end
+  room_world --- c3
+  corridor_world --- c4
+  room_world -.- marker(("100<br>robot"))
+```
+
+Cameras 3 and 4 have two extrinsics each: 3 in the room (1000) and the transition (3000), 4 in the corridor (2000) and the transition. The service's `camera_ids` are 0 to 6.
+
+One [pris-aruco-localization](pris-aruco-localization.md) covers the whole space, with `camera_ids` 0 to 6 and `reference_frame` 1000; at startup it asks this service for the extrinsics of cameras 5 and 6 from 1000. The robot is always published as 100 → 1000, even when only the corridor sees it, and at the door cameras 3 and 4 are combined in one pose. `FrameTransformation.100.2000` always takes the same route: 100 → 1000 → 3 → 3000 → 4 → 2000.
+
+Don't run one localization per world: near the door the robot would get two parents, each estimate made with fewer cameras, and the service keeps only the first.
 
 ## Reference
 
