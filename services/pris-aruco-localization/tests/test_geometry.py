@@ -1,12 +1,13 @@
 import numpy as np
 import pytest
 from pris_msgs.camera_pb2 import FrameTransformation
-from pris_msgs.utils.tensor import to_tensor
+from pris_msgs.utils.tensor import to_array, to_tensor
 
 from pris_aruco_localization.geometry import (
     Camera,
     Observation,
     camera_from_calibration,
+    extrinsic_from,
     invert,
     kabsch,
     localize,
@@ -37,6 +38,27 @@ def test_camera_from_calibration(cameras):
 def test_calibration_without_the_reference_frame(scene):
     with pytest.raises(ValueError, match="no extrinsic from frame 1002"):
         camera_from_calibration(scene.load(0), 1002)
+
+
+def test_extrinsic_from(scene):
+    calibration = scene.load(0)
+    extrinsic = extrinsic_from(calibration, WORLD)
+    assert (extrinsic.source, extrinsic.target) == (WORLD, 0)
+    assert extrinsic_from(calibration, 2000) is None
+
+
+def test_an_extrinsic_from_another_world(scene):
+    calibration = scene.load(0)
+    world_to_corridor = to_matrix([0, 0, np.pi / 2], [10, 0, 0])
+    corridor_to_camera = to_array(extrinsic_from(calibration, WORLD).tf) @ invert(
+        world_to_corridor)
+    composed = FrameTransformation(source=2000, target=0, tf=to_tensor(corridor_to_camera))
+
+    camera = camera_from_calibration(calibration, 2000, composed)
+
+    np.testing.assert_allclose(camera.extrinsic, corridor_to_camera)
+    np.testing.assert_allclose(
+        camera_from_calibration(calibration, WORLD, composed).extrinsic, corridor_to_camera)
 
 
 def test_calibration_with_bad_matrices(scene):

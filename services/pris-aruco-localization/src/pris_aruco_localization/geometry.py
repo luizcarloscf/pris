@@ -14,7 +14,7 @@ from dataclasses import dataclass, field, replace
 import cv2
 import numpy as np
 import numpy.typing as npt
-from pris_msgs.camera_pb2 import CameraCalibration
+from pris_msgs.camera_pb2 import CameraCalibration, FrameTransformation
 from pris_msgs.utils.tensor import to_array
 
 Array = npt.NDArray[np.float64]
@@ -58,17 +58,27 @@ class Camera:
         return np.array([self.intrinsic[0, 0], self.intrinsic[1, 1]])
 
 
-def camera_from_calibration(calibration: CameraCalibration, reference_frame: int) -> Camera:
-    """Return the camera of a calibration, with its extrinsic from `reference_frame`.
-
-    Raises:
-        ValueError: the calibration has no extrinsic from `reference_frame`, matrices of the wrong
-            shape, or no resolution.
-    """
+def extrinsic_from(calibration: CameraCalibration,
+                   reference_frame: int) -> FrameTransformation | None:
+    """Return the calibration's extrinsic from `reference_frame` to the camera, or None."""
     for extrinsic in calibration.extrinsic:
         if extrinsic.source == reference_frame and extrinsic.target == calibration.id:
-            break
-    else:
+            return extrinsic
+    return None
+
+
+def camera_from_calibration(calibration: CameraCalibration, reference_frame: int,
+                            extrinsic: FrameTransformation | None = None) -> Camera:
+    """Return the camera of a calibration, with its extrinsic from `reference_frame`: `extrinsic`
+    if given, such as one composed by pris-frame-transformation, else the calibration's own.
+
+    Raises:
+        ValueError: no extrinsic from `reference_frame`, matrices of the wrong shape, or no
+            resolution.
+    """
+    if extrinsic is None:
+        extrinsic = extrinsic_from(calibration, reference_frame)
+    if extrinsic is None:
         raise ValueError("camera {} has no extrinsic from frame {}".format(
             calibration.id, reference_frame))
     camera = Camera(

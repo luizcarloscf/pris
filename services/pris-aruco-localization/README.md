@@ -9,6 +9,7 @@ Localizes ArUco markers in the world. It takes the corners that pris-aruco-detec
 | Consumes | `ArUco.<id>.Detection` | `pris.vision.ObjectAnnotations`, from pris-aruco-detector |
 | Publishes | `ArUco.FrameTransformations` | `pris.vision.FrameTransformations` |
 | Calls | `CalibrationServer.GetCalibration`, at startup | through `pris_common.calibrations.fetch_calibrations` |
+| Calls | `FrameTransformation.GetTransformation`, at startup, for cameras of another world | through `pris_common.transformations.fetch_transformations` |
 
 One `ArUco.FrameTransformations` per capture instant, even when no marker is localized (an empty list). Each localized marker is one `FrameTransformation`:
 
@@ -23,9 +24,9 @@ The message's `created_at` is the mean capture instant of the detections it comb
 
 ## How it works
 
-At startup it fetches the calibrations of `camera_ids` with `pris_common.calibrations.fetch_calibrations` and turns each into a camera with its extrinsic from `reference_frame`; a missing calibration, or one without that extrinsic, makes it exit, and Kubernetes restarts it. A new calibration is picked up at the next restart. Each camera's intrinsics are scaled to the resolution of its detections.
+At startup it fetches the calibrations of `camera_ids` with `pris_common.calibrations.fetch_calibrations` and turns each into a camera with its extrinsic from `reference_frame`. For a camera calibrated in another world, it asks pris-frame-transformation for one with `pris_common.transformations.fetch_transformations`. A missing calibration or extrinsic makes it exit, and Kubernetes restarts it. A new calibration is picked up at the next restart. Each camera's intrinsics are scaled to the resolution of its detections.
 
-It keeps every camera's detections, so it runs as one instance: replicas would each get their own copy instead of sharing the work.
+It keeps every camera's detections, so it runs as one instance: replicas would each get their own copy instead of sharing the work. Run one for the whole space, with the cameras of every world: the cameras at a door are combined in one pose, and each marker has the single parent pris-frame-transformation accepts.
 
 - **Capture instants.** `ArucoLocalization.step` consumes the cameras' detection topics. Detections whose capture instants are within `sync.tolerance` of the instant's first one belong to it, one per camera; an instant is solved once every camera has sent, or `sync.max_delay` after its first detection arrived, with the cameras that have. A detection older than the last solved instant is dropped. The cameras capture on a shared clock grid and `created_at` is the hardware capture instant, so only detections of the same tick are combined: keep the tolerance below half the frame period.
 - **A pose**, for each configured marker of an instant:
@@ -45,9 +46,9 @@ It keeps every camera's detections, so it runs as one instance: replicas would e
 
 `pris-aruco-localization [options.json]`, by default `/etc/pris-aruco-localization/options.json`. The fields are described in [`conf/options.proto`](src/pris_aruco_localization/conf/options.proto) and their defaults, those of the image on a cluster, are in [`etc/conf/options.json`](etc/conf/options.json): `broker_uri` (`rabbitmq.pris`), `telemetry` (to `otel-collector.pris`; an empty `otlp_endpoint` turns it off), and:
 
-- `camera_ids`: the cameras whose detections are combined (0 to 3); their calibrations are fetched at startup.
+- `camera_ids`: the cameras whose detections are combined, from any world (0 to 3); their calibrations are fetched at startup.
 - `markers`: marker id → side length in meters. The length is the black square, without the white border: a wrong length puts the marker at a wrong distance. Other markers are ignored.
-- `reference_frame`: the frame the poses are given in, and that every camera's calibration needs an extrinsic from (1000, the world).
+- `reference_frame`: the frame the poses are given in (1000, the world). A camera of another world gets its extrinsic from pris-frame-transformation, which needs that camera in its own `camera_ids`.
 - `sync`: `tolerance` (30 ms) and `max_delay` (100 ms).
 - `max_camera_error`, `max_error` (0 publishes every pose) and `min_cameras`, the thresholds above; `validity`, how long a pose stays valid.
 

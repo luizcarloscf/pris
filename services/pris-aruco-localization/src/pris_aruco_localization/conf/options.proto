@@ -25,14 +25,15 @@ message ArucoLocalizationOptions {
   string broker_uri = 1;
   // traces and metrics export (OpenTelemetry).
   TelemetryOptions telemetry = 2;
-  // frame the markers are localized in; every camera needs an extrinsic from it.
+  // frame the markers are localized in; a camera calibrated in another world gets its extrinsic
+  // from pris-frame-transformation at startup.
   int64 reference_frame = 3;
   // frame id of marker <id> is frame_id_offset + id.
   int64 frame_id_offset = 4;
   // markers to localize: marker id -> side length in meters. Other markers are ignored.
   map<int64, double> markers = 5;
-  // cameras whose detections ('ArUco.<id>.Detection') are used; their calibrations are fetched
-  // from pris-calibration-server at startup.
+  // cameras whose detections ('ArUco.<id>.Detection') are used, from any world; their
+  // calibrations are fetched from pris-calibration-server at startup.
   repeated int64 camera_ids = 6;
   SyncOptions sync = 7;
   // pixels: a camera whose RMS reprojection error is above this is dropped as an outlier
