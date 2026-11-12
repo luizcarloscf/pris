@@ -24,6 +24,7 @@ The `k8s/` folder has the manifests of the infrastructure and of the services, o
 | `pris-aruco-localization/` | `luizcarloscf/pris-aruco-localization:0.1.0` | `ArUco.FrameTransformations` from the detections; one instance (`Recreate`) |
 | `pris-broker-events/` | `luizcarloscf/pris-broker-events:0.1.0` | publishes `BrokerEvents.Consumers`; one instance (`Recreate`), since replicas would split its events |
 | `pris-calibration-server/` | `luizcarloscf/pris-calibration-server:0.1.0` | serves `CalibrationServer.GetCalibration` |
+| `pris-camera-gateway/` | `luizcarloscf/pris-camera-gateway:0.1.0` | publishes `CameraGateway.<n>.Frame`, serves `.GetConfig`/`.SetConfig`; one ConfigMap and Deployment per camera (0–3), host network, `Recreate` |
 | `pris-frame-transformation/` | `luizcarloscf/pris-frame-transformation:0.1.0` | publishes `FrameTransformation.<ids>`, serves `FrameTransformation.GetTransformation`; one instance (`Recreate`) |
 
 The services' default options already use these names: the broker at `amqp://guest:guest@rabbitmq.pris`, and telemetry sent to `http://otel-collector.pris:4318`.
@@ -44,6 +45,7 @@ kubectl apply -f k8s/pris-aruco-detector/
 kubectl apply -f k8s/pris-aruco-localization/
 kubectl apply -f k8s/pris-calibration-server/
 kubectl apply -f k8s/pris-frame-transformation/
+kubectl apply -f k8s/pris-camera-gateway/
 ```
 
 ## The broker

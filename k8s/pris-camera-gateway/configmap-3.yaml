@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pris-camera-gateway-3
+  namespace: pris
+data:
+  options.json: |-
+    {
+      "broker_uri": "amqp://guest:guest@rabbitmq.pris",
+      "telemetry": {
+        "otlp_endpoint": "http://otel-collector.pris:4318",
+        "service_name": "pris-camera-gateway"
+      },
+      "camera": {
+        "id": 3,
+        "ip": "10.20.6.3",
+        "trigger_mode": "FREE_RUN",
+        "algorithm": "BILINEAR",
+        "onboard_color_processing": false,
+        "use_turbojpeg": true,
+        "packet_size": 1400,
+        "packet_delay": 6000,
+        "packet_resend": true,
+        "packet_resend_timeout": 100,
+        "packet_resend_max_requests": 5,
+        "reverse_x": false,
+        "settle_time": 2.0,
+        "clock_sync_period": 1.0,
+        "latch_samples": 10,
+        "initial_config": {
+          "sampling": {
+            "frequency": 10.0
+          },
+          "image": {
+            "color_space": {
+              "value": "RGB"
+            },
+            "format": {
+              "format": "JPEG",
+              "compression": 0.8
+            },
+            "region": {
+              "vertices": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 1288,
+                  "y": 728
+                }
+              ]
+            }
+          },
+          "camera": {
+            "gain": {
+              "automatic": true
+            },
+            "shutter": {
+              "automatic": true
+            },
+            "brightness": {
+              "ratio": 0.0
+            },
+            "white_balance_rv": {
+              "automatic": true
+            },
+            "white_balance_bu": {
+              "automatic": true
+            }
+          }
+        }
+      }
+    }
