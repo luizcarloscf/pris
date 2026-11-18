@@ -96,7 +96,9 @@ class ArucoLocalization(object):
                 continue
             first = min(m.created_at for m in self.pending)
             instant = {
-                m.topic: m for m in reversed(self.pending) if m.created_at - first <= tolerance
+                str(m.topic): m
+                for m in reversed(self.pending)
+                if m.created_at - first <= tolerance
             }
             if instant.keys() == self.topics or time.time() >= self.deadline:
                 self.pending = [m for m in self.pending if m.created_at - first > tolerance]
