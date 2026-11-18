@@ -6,8 +6,8 @@ import pytest
 from google.protobuf.struct_pb2 import Struct
 from google.protobuf.wrappers_pb2 import Int64Value
 
-from pris_wire.core import Message, Status, StatusCode, Subscription
-from pris_wire.rpc import LogInterceptor, ServiceProvider
+from pris_wire.core import ContentType, Message, Status, StatusCode, Subscription
+from pris_wire.rpc import Interceptor, LogInterceptor, ServiceProvider
 
 
 def my_service(request, context):
@@ -89,8 +89,9 @@ def test_burst_loses_nothing(connect, topic):
 
     def server():
         service = ServiceProvider(channel)
-        service.delegate(topic, lambda request, context: served.append(1) or request,
-                         Struct, Struct)
+        service.delegate(
+            topic, lambda request, context: served.append(1) or request, Struct, Struct
+        )
         ready.set()
         while not stop.is_set():
             try:
@@ -131,3 +132,41 @@ def test_delegate(channel, topic):
     service.delegate(topic, my_service, Struct, Int64Value)
     with pytest.raises(RuntimeError):
         service.delegate(topic, my_service, Struct, Int64Value)
+
+
+class BeforeOnly:
+    def before_call(self, context):
+        pass
+
+
+class Neither:
+    pass
+
+
+@pytest.mark.parametrize("interceptor", [BeforeOnly(), Neither()])
+def test_an_interceptor_needs_both_methods(channel, interceptor):
+    with pytest.raises(TypeError):
+        ServiceProvider(channel).add_interceptor(interceptor)
+
+
+def test_an_interceptor_subclass_is_accepted(channel):
+    ServiceProvider(channel).add_interceptor(Interceptor())
+
+
+@pytest.mark.parametrize(
+    "body, content_type",
+    [
+        (b"\xff\xff\xff", ContentType.PROTOBUF),
+        (b"not json", ContentType.JSON),
+    ],
+)
+def test_a_request_of_another_type_fails_its_precondition(channel, topic, body, content_type):
+    service = ServiceProvider(channel)
+    service.delegate(topic, my_service, Struct, Int64Value)
+    subscription = Subscription(channel)
+
+    channel.publish(Message(body, reply_to=subscription, content_type=content_type), topic=topic)
+    service.serve(channel.consume(timeout=1.0))
+
+    reply = channel.consume(timeout=1.0)
+    assert reply.status.code == StatusCode.FAILED_PRECONDITION

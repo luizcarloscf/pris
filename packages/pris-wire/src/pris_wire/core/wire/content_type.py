@@ -27,14 +27,8 @@ def content_type_to_wire(content_type: ContentType) -> str:
     """
     assert_type(content_type, ContentType, "content_type")
     if content_type == ContentType.PROTOBUF:
-        return 'application/x-protobuf'
-
-    if content_type == ContentType.JSON:
-        return 'application/json'
-
-    raise NotImplementedError(
-        "ContentType '{}' wire serialization not implemented".format(
-            content_type.name))
+        return "application/x-protobuf"
+    return "application/json"
 
 
 def content_type_from_wire(string: str) -> ContentType:
@@ -51,10 +45,8 @@ def content_type_from_wire(string: str) -> ContentType:
         RuntimeError: `string` is another content type.
     """
     assert_type(string, str, "string")
-    if string == 'application/x-protobuf':
+    if string == "application/x-protobuf":
         return ContentType.PROTOBUF
-
-    if string == 'application/json':
+    if string == "application/json":
         return ContentType.JSON
-
-    raise RuntimeError("Bad content_type {}".format(string))
+    raise RuntimeError("unknown content_type {!r}".format(string))

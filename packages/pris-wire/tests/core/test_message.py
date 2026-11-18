@@ -10,7 +10,6 @@ def test_default_constructor():
     message = Message()
     assert not message.has_body()
     assert not message.has_topic()
-    assert message.has_created_at()
     assert not message.has_content_type()
     assert not message.has_correlation_id()
     assert not message.has_reply_to()
@@ -25,17 +24,20 @@ def test_created_at_is_unix_time():
     assert before <= message.created_at <= time.time()
 
 
-@pytest.mark.parametrize("property, valid, invalid", [
-    ("topic", "str", -1),
-    ("reply_to", "str", -1),
-    ("body", b"bytes", -1),
-    ("subscription_id", "str", -1),
-    ("correlation_id", -1, "str"),
-    ("content_type", ContentType.PROTOBUF, "str"),
-    ("timeout", 1.5, "str"),
-    ("status", Status(), "str"),
-    ("metadata", {}, "str"),
-])
+@pytest.mark.parametrize(
+    "property, valid, invalid",
+    [
+        ("topic", "str", -1),
+        ("reply_to", "str", -1),
+        ("body", b"bytes", -1),
+        ("subscription_id", "str", -1),
+        ("correlation_id", -1, "str"),
+        ("content_type", ContentType.PROTOBUF, "str"),
+        ("timeout", 1.5, "str"),
+        ("status", Status(), "str"),
+        ("metadata", {}, "str"),
+    ],
+)
 def test_setters_check_types(property, valid, invalid):
     message = Message()
     setattr(message, property, valid)
@@ -44,16 +46,19 @@ def test_setters_check_types(property, valid, invalid):
         setattr(message, property, invalid)
 
 
-@pytest.mark.parametrize("attr, value, checker", [
-    ("topic", "string", Message.has_topic),
-    ("reply_to", "string", Message.has_reply_to),
-    ("subscription_id", "string", Message.has_subscription_id),
-    ("correlation_id", -1, Message.has_correlation_id),
-    ("body", b"string", Message.has_body),
-    ("content_type", ContentType.JSON, Message.has_content_type),
-    ("timeout", 10.0, Message.has_timeout),
-    ("status", Status(), Message.has_status),
-])
+@pytest.mark.parametrize(
+    "attr, value, checker",
+    [
+        ("topic", "string", Message.has_topic),
+        ("reply_to", "string", Message.has_reply_to),
+        ("subscription_id", "string", Message.has_subscription_id),
+        ("correlation_id", -1, Message.has_correlation_id),
+        ("body", b"string", Message.has_body),
+        ("content_type", ContentType.JSON, Message.has_content_type),
+        ("timeout", 10.0, Message.has_timeout),
+        ("status", Status(), Message.has_status),
+    ],
+)
 def test_has_field(attr, value, checker):
     message = Message()
     assert not checker(message)
@@ -108,3 +113,14 @@ def test_constructor():
     assert message.body == b"body"
     assert message.reply_to == "reply_to"
     assert message.content_type == ContentType.JSON
+
+
+@pytest.mark.parametrize("other", [None, "str", 0, Status()])
+def test_a_message_differs_from_other_types(other):
+    assert Message() != other
+
+
+@pytest.mark.parametrize("other", [None, "str", 0, Message()])
+def test_a_status_differs_from_other_types(other):
+    assert Status() != other
+    assert Status() == Status()

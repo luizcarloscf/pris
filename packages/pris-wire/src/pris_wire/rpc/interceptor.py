@@ -3,7 +3,7 @@ from __future__ import annotations
 from .context import Context
 
 
-class Interceptor(object):
+class Interceptor:
     """Code a ServiceProvider runs around every request; subclasses override either method."""
 
     def before_call(self, context: Context) -> None:

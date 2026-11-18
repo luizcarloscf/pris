@@ -35,9 +35,20 @@ def test_proto_is_packaged():
 
 def test_received_messages_carry_their_delivery_tag():
     amqp_message = amqp.Message(channel=None, body=b"")
-    amqp_message.delivery_info = {"routing_key": "topic", "consumer_tag": "tag",
-                                  "delivery_tag": 42}
+    amqp_message.delivery_info = {
+        "routing_key": "topic",
+        "consumer_tag": "tag",
+        "delivery_tag": 42,
+    }
     assert WireV1.from_amqp_message(amqp_message).delivery_tag == 42
     del amqp_message.delivery_info["delivery_tag"]
     assert not WireV1.from_amqp_message(amqp_message).has_delivery_tag()
     assert not Message().has_delivery_tag()
+
+
+def test_publishing_leaves_the_metadata_untouched():
+    message = Message()
+    message.metadata = {"key": "value"}
+    message.status = Status(StatusCode.OK)
+    WireV1.to_amqp_properties(message)
+    assert message.metadata == {"key": "value"}

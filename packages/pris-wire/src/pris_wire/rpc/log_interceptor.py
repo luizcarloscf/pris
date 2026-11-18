@@ -10,20 +10,22 @@ class LogInterceptor(Interceptor):
     warning otherwise."""
 
     def __init__(self) -> None:
-        self.log = Logger(name='LogInterceptor')
+        self.log = Logger("LogInterceptor")
 
     def before_call(self, context: Context) -> None:
-        self.begin = now()
+        context.addons["LogInterceptor.begin"] = now()
 
     def after_call(self, context: Context) -> None:
-        took = now() - self.begin
+        took = now() - context.addons["LogInterceptor.begin"]
         status = context.reply.status
         assert status is not None
         if status.ok():
             self.log.info("took={}s, code={}", took, status.code.name)
         elif status.code == StatusCode.INTERNAL_ERROR:
-            self.log.error('took={}s status={} request={}', took, status,
-                           context.request.short_string())
+            self.log.error(
+                "took={}s status={} request={}", took, status, context.request.short_string()
+            )
         else:
-            self.log.warn('took={}s status={} request={}', took, status,
-                          context.request.short_string())
+            self.log.warn(
+                "took={}s status={} request={}", took, status, context.request.short_string()
+            )

@@ -37,8 +37,12 @@ def test_messages_are_acknowledged_by_default(connect, topic):
 
 
 def test_a_max_length_of_one_keeps_only_the_newest(channel, connect, topic):
-    subscription = Subscription(channel, arguments={"x-max-length": 1, "x-overflow": "drop-head"},
-                                prefetch=1, manual_ack=True)
+    subscription = Subscription(
+        channel,
+        arguments={"x-max-length": 1, "x-overflow": "drop-head"},
+        prefetch=1,
+        manual_ack=True,
+    )
     subscription.subscribe(topic)
     publisher = connect()
     for n in range(5):
@@ -111,11 +115,14 @@ def test_a_different_prefetch_does_not_leak_to_later_subscriptions(channel, topi
     assert limited.manual_ack and not plain.manual_ack
 
 
-@pytest.mark.parametrize("kwargs, match", [
-    ({"prefetch": 1}, "needs manual_ack"),
-    ({"prefetch": 0, "manual_ack": True}, "positive"),
-    ({"prefetch": 1.5, "manual_ack": True}, "positive"),
-])
+@pytest.mark.parametrize(
+    "kwargs, match",
+    [
+        ({"prefetch": 1}, "needs manual_ack"),
+        ({"prefetch": 0, "manual_ack": True}, "positive"),
+        ({"prefetch": 1.5, "manual_ack": True}, "positive"),
+    ],
+)
 def test_invalid_prefetch(channel, kwargs, match):
     with pytest.raises(ValueError, match=match):
         Subscription(channel, **kwargs)

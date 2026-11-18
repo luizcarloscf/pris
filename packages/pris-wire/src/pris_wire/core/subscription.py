@@ -8,12 +8,17 @@ if TYPE_CHECKING:
     from .channel import Channel
 
 
-class Subscription(object):
+class Subscription:
     """A queue that receives the messages of the topics it subscribes to."""
 
-    def __init__(self, channel: Channel, name: str | None = None,
-                 arguments: dict[str, Any] | None = None, prefetch: int | None = None,
-                 manual_ack: bool = False) -> None:
+    def __init__(
+        self,
+        channel: Channel,
+        name: str | None = None,
+        arguments: dict[str, Any] | None = None,
+        prefetch: int | None = None,
+        manual_ack: bool = False,
+    ) -> None:
         """Declare a queue bound to its own name and consume it on `channel`.
 
         The queue is deleted once its last consumer is gone.
@@ -64,9 +69,8 @@ class Subscription(object):
         )
 
         prefetch_count = prefetch or 0
-        if getattr(channel, "_prefetch", 0) != prefetch_count:
-            self._channel.basic_qos(prefetch_size=0, prefetch_count=prefetch_count,
-                                    a_global=False)
+        if channel._prefetch != prefetch_count:
+            self._channel.basic_qos(prefetch_size=0, prefetch_count=prefetch_count, a_global=False)
             channel._prefetch = prefetch_count
 
         self._channel.basic_consume(

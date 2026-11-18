@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from sys import exit
+import sys
 from typing import Any, NoReturn
 
 from colorlog import ColoredFormatter, StreamHandler, getLogger
@@ -20,7 +20,8 @@ def _level_from_env() -> int | None:
     if isinstance(level, int):
         return level
     logging.getLogger(__name__).warning(
-        "Ignoring invalid %s=%r", LOG_LEVEL_ENV, os.environ[LOG_LEVEL_ENV])
+        "Ignoring invalid %s=%r", LOG_LEVEL_ENV, os.environ[LOG_LEVEL_ENV]
+    )
     return None
 
 
@@ -33,8 +34,9 @@ class Logger:
     ERROR = logging.ERROR
     CRITICAL = logging.CRITICAL
 
-    def __init__(self, name: str, level: int | str = logging.DEBUG,
-                 propagate: bool = True) -> None:
+    def __init__(
+        self, name: str, level: int | str = logging.DEBUG, propagate: bool = True
+    ) -> None:
         """Create or reuse the logger `name`.
 
         Args:
@@ -49,22 +51,23 @@ class Logger:
         """
         assert_type(name, str, "name")
 
-        style = "%(log_color)s[%(levelname)-.1s][%(threadName)s]" \
-                "[%(asctime)s][%(name)s] %(message)s"
+        style = (
+            "%(log_color)s[%(levelname)-.1s][%(threadName)s]" "[%(asctime)s][%(name)s] %(message)s"
+        )
 
         formatter = ColoredFormatter(
             style,
             datefmt=None,
             reset=True,
             log_colors={
-                'DEBUG': 'cyan',
-                'INFO': 'white',
-                'WARNING': 'yellow',
-                'ERROR': 'red',
-                'CRITICAL': 'white,bg_red',
+                "DEBUG": "cyan",
+                "INFO": "white",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "white,bg_red",
             },
             secondary_log_colors={},
-            style='%',
+            style="%",
         )
 
         self.logger = getLogger(name)
@@ -103,4 +106,4 @@ class Logger:
     def critical(self, formatter: str, *args: Any) -> NoReturn:
         """Log `formatter.format(*args)` at CRITICAL level, then exit the process with -1."""
         self.logger.critical(formatter.format(*args))
-        exit(-1)
+        sys.exit(-1)

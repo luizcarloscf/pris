@@ -12,14 +12,14 @@ from .wire.conversion import WireV1
 
 if TYPE_CHECKING:
     from .message import Message
-    from .subscription import Subscription
 
 
-class Channel(object):
+class Channel:
     """A connection to the broker, to publish messages and consume those of its subscriptions."""
 
-    def __init__(self, uri: str = "amqp://guest:guest@localhost:5672",
-                 exchange: str = "pris") -> None:
+    def __init__(
+        self, uri: str = "amqp://guest:guest@localhost:5672", exchange: str = "pris"
+    ) -> None:
         """Connect to the broker and declare the topic exchange.
 
         Args:
@@ -53,7 +53,6 @@ class Channel(object):
             auto_delete=False,
         )
 
-        self.subscriptions: list[Subscription] = []
         self._prefetch = 0
         self._deliveries: collections.deque[amqp.Message] = collections.deque()
 

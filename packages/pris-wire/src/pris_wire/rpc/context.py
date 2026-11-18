@@ -5,7 +5,7 @@ from typing import Any
 from ..core.message import Message
 
 
-class Context(object):
+class Context:
     """What a service function and the interceptors see of one request."""
 
     def __init__(self, request: Message, reply: Message) -> None:

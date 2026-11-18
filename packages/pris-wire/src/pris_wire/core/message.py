@@ -13,12 +13,15 @@ from .wire.content_type import ContentType
 from .wire.status import Status
 
 
-class Message(object):
+class Message:
     """A message on the bus: a body and its properties (topic, reply_to, status, ...)."""
 
-    def __init__(self, content: bytes | ProtoMessage | dict[str, Any] | None = None,
-                 reply_to: str | Subscription | None = None,
-                 content_type: ContentType | None = None) -> None:
+    def __init__(
+        self,
+        content: bytes | ProtoMessage | dict[str, Any] | None = None,
+        reply_to: str | Subscription | None = None,
+        content_type: ContentType | None = None,
+    ) -> None:
         """Create a message, created_at now.
 
         Args:
@@ -32,7 +35,7 @@ class Message(object):
             TypeError: `reply_to` or `content_type` has the wrong type.
         """
         self._topic: str | None = None
-        self._body = b''
+        self._body = b""
         self._reply_to: str | None = None
         self._subscription_id: str | None = None
         self._delivery_tag: int | None = None
@@ -56,47 +59,46 @@ class Message(object):
                 self.pack(content)
 
     def __str__(self) -> str:
-        created_at = datetime.fromtimestamp(self.created_at)
-        pretty = "{\n"
-        pretty += "  topic = '{}'\n".format(self.topic or "")
-        pretty += "  created_at = {}\n".format(created_at)
-        pretty += "  correlation_id = {}\n".format(self.correlation_id)
-        pretty += "  reply_to = '{}'\n".format(self.reply_to or "")
-        pretty += "  subscription_id = '{}'\n".format(self.subscription_id
-                                                      or "")
-        pretty += "  timeout = {}\n".format(self.timeout)
-        pretty += "  status = {}\n".format(self.status)
-        pretty += "  metadata = {}\n".format(self.metadata)
-        pretty += "  content_type = {}\n".format(self.content_type)
-        pretty += "  body[{}] = {} \n".format(len(self.body), repr(self.body))
-        pretty += "}"
-        return pretty
+        fields = [
+            "topic = '{}'".format(self.topic or ""),
+            "created_at = {}".format(datetime.fromtimestamp(self.created_at)),
+            "correlation_id = {}".format(self.correlation_id),
+            "reply_to = '{}'".format(self.reply_to or ""),
+            "subscription_id = '{}'".format(self.subscription_id or ""),
+            "timeout = {}".format(self.timeout),
+            "status = {}".format(self.status),
+            "metadata = {}".format(self.metadata),
+            "content_type = {}".format(self.content_type),
+            "body[{}] = {!r}".format(len(self.body), self.body),
+        ]
+        return "{\n" + "".join("  {}\n".format(field) for field in fields) + "}"
 
     def short_string(self) -> str:
         """Return the message's properties on one line, leaving out the empty ones."""
-        created_at = datetime.fromtimestamp(self.created_at)
-        pretty = "{"
-        pretty += "topic='{}'".format(self.topic)
-        pretty += " created_at={}".format(created_at)
+        fields = [
+            "topic='{}'".format(self.topic),
+            "created_at={}".format(datetime.fromtimestamp(self.created_at)),
+        ]
         if self.has_correlation_id():
-            pretty += " correlation_id={}".format(self.correlation_id)
+            fields.append("correlation_id={}".format(self.correlation_id))
         if self.has_reply_to():
-            pretty += " reply_to='{}'".format(self.reply_to)
+            fields.append("reply_to='{}'".format(self.reply_to))
         if self.has_subscription_id():
-            pretty += " subscription_id='{}'".format(self.subscription_id)
+            fields.append("subscription_id='{}'".format(self.subscription_id))
         if self.has_timeout():
-            pretty += " timeout={}".format(self.timeout)
+            fields.append("timeout={}".format(self.timeout))
         if self.has_status():
-            pretty += " status={}".format(self.status)
+            fields.append("status={}".format(self.status))
         if self.has_metadata():
-            pretty += " metadata={}".format(self.metadata)
+            fields.append("metadata={}".format(self.metadata))
         if self.has_content_type():
-            pretty += " content_type={}".format(self.content_type)
-        pretty += " body[{}]={}".format(len(self.body), repr(self.body))
-        pretty += "}"
-        return pretty
+            fields.append("content_type={}".format(self.content_type))
+        fields.append("body[{}]={!r}".format(len(self.body), self.body))
+        return "{" + " ".join(fields) + "}"
 
     def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Message):
+            return NotImplemented
         return self.__dict__ == other.__dict__
 
     def create_reply(self) -> Message:
@@ -136,7 +138,7 @@ class Message(object):
 
     @reply_to.setter
     def reply_to(self, value: str | Subscription) -> None:
-        assert_type(value, [str, Subscription], "reply_to")
+        assert_type(value, (str, Subscription), "reply_to")
 
         if self.correlation_id is None:
             self.correlation_id = new_uuid()
@@ -144,8 +146,7 @@ class Message(object):
         if isinstance(value, Subscription):
             self._reply_to = value.name
             self.subscription_id = value.id
-
-        elif isinstance(value, str):
+        else:
             self._reply_to = value
 
     def has_reply_to(self) -> bool:
@@ -232,10 +233,6 @@ class Message(object):
     def created_at(self, timestamp: float) -> None:
         self._created_at = timestamp
 
-    def has_created_at(self) -> bool:
-        """Return True if created_at is set."""
-        return self._created_at is not None
-
     @property
     def metadata(self) -> dict[str, Any]:
         """Extra key-value pairs, sent as AMQP headers; a dict (TypeError otherwise)."""
@@ -258,7 +255,7 @@ class Message(object):
 
     @timeout.setter
     def timeout(self, seconds: float) -> None:
-        assert_type(seconds, [float, int], "timeout")
+        assert_type(seconds, (float, int), "timeout")
         self._timeout = seconds
 
     def has_timeout(self) -> bool:
@@ -297,24 +294,18 @@ class Message(object):
         Raises:
             google.protobuf.json_format.ParseError: a dict can't be a Struct.
         """
-        is_dict = isinstance(obj, dict)
-
         if isinstance(obj, dict):
+            if not self.has_content_type():
+                self.content_type = ContentType.JSON
             obj = pb.ParseDict(obj, Struct())
+        elif not self.has_content_type():
+            self.content_type = ContentType.PROTOBUF
 
-        if not self.has_content_type():
-            self.content_type = ContentType.JSON if is_dict else ContentType.PROTOBUF
-
-        if self.content_type == ContentType.PROTOBUF:
-            self.body = obj.SerializeToString()
-        elif self.content_type == ContentType.JSON:
-            packed = pb.MessageToJson(
-                obj, indent=0, always_print_fields_with_no_presence=True)
-            self.body = packed.encode('latin')
+        if self.content_type == ContentType.JSON:
+            json = pb.MessageToJson(obj, indent=0, always_print_fields_with_no_presence=True)
+            self.body = json.encode("utf-8")
         else:
-            raise NotImplementedError(
-                "Serialization to '{}' type not implemented".format(
-                    self.content_type))
+            self.body = obj.SerializeToString()
 
     def unpack(self, schema: type[Any] = dict) -> Any:
         """Deserialize the body, with the message's content_type (PROTOBUF if unset).
@@ -329,25 +320,12 @@ class Message(object):
             google.protobuf.message.DecodeError: a PROTOBUF body isn't a `schema`.
             google.protobuf.json_format.ParseError: a JSON body isn't a `schema`.
         """
-        is_dict = schema is dict
-        if is_dict:
-            schema = Struct
-
-        obj = schema()
-        if not self.has_content_type():
-            self.content_type = ContentType.PROTOBUF
-
-        if self.content_type == ContentType.PROTOBUF:
-            obj.ParseFromString(self.body)
-        elif self.content_type == ContentType.JSON:
-            obj = pb.Parse(self.body, obj)
+        obj = Struct() if schema is dict else schema()
+        if self.content_type == ContentType.JSON:
+            pb.Parse(self.body, obj)
         else:
-            raise NotImplementedError(
-                "Deserialization from '{}' type not implemented".format(
-                    self.content_type))
+            obj.ParseFromString(self.body)
 
-        if is_dict:
-            obj = pb.MessageToDict(
-                obj, always_print_fields_with_no_presence=True)
-
+        if schema is dict:
+            return pb.MessageToDict(obj, always_print_fields_with_no_presence=True)
         return obj

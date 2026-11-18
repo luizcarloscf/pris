@@ -13,7 +13,7 @@ def new_uuid() -> int:
 
 def consumer_id() -> str:
     """Return a unique consumer id: the host name and a random hex id."""
-    return '{}/{:X}'.format(uname()[1], new_uuid())
+    return "{}/{:X}".format(uname()[1], new_uuid())
 
 
 def now() -> float:
@@ -21,27 +21,21 @@ def now() -> float:
     return time.time()
 
 
-def assert_type(instance: Any, types: type | tuple[type, ...] | list[type], name: str) -> None:
+def assert_type(instance: Any, types: type | tuple[type, ...], name: str) -> None:
     """Check the type of a value.
 
     Args:
         instance: the value to check.
-        types: the accepted type, or several.
+        types: the accepted type, or a tuple of several.
         name: the value's name, used in the error.
 
     Raises:
         TypeError: `instance` is of none of `types`.
     """
-    if isinstance(types, list):
-        types = tuple(types)
-
     if not isinstance(instance, types):
-        input_type = type(instance).__name__
-        if isinstance(types, tuple):
-            names = " or ".join([t.__name__ for t in types])
-            error = "Object {} must be of types {}, received type {}".format(
-                name, names, input_type)
-        else:
-            error = "Object {} must be of type {}, received type {}".format(
-                name, types.__name__, input_type)
-        raise TypeError(error)
+        accepted = types if isinstance(types, tuple) else (types,)
+        raise TypeError(
+            "{} must be {}, got {}".format(
+                name, " or ".join(t.__name__ for t in accepted), type(instance).__name__
+            )
+        )
