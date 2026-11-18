@@ -6,13 +6,14 @@ SERVICES := $(patsubst services/%/uv.lock,%,$(wildcard services/*/uv.lock))
 
 unexport VIRTUAL_ENV
 
-.PHONY: help sync proto test lint build image clean broker-up broker-down docs-serve docs-build docs-image
+.PHONY: help sync proto test lint format build image clean broker-up broker-down docs-serve docs-build docs-image
 
 help:
 	@echo "sync         install every workspace package (editable) into .venv"
 	@echo "proto        regenerate the Python code (*_pb2.py/.pyi) of every package and service"
 	@echo "test         run the tests of the packages and of every service (needs make broker-up)"
 	@echo "lint         flake8 + mypy, packages and services"
+	@echo "format       black on the packages and services"
 	@echo "build        build sdists and wheels into dist/"
 	@echo "image        build a service image locally: make image SERVICE=pris-calibration-server"
 	@echo "broker-up    start a local RabbitMQ, configured as k8s/common/rabbitmq (host network)"
@@ -39,6 +40,9 @@ lint:
 	uv run flake8
 	uv run mypy $(addprefix -p ,$(MYPY_PACKAGES))
 	@set -e; for service in $(SERVICES); do echo "== $$service"; uv --directory services/$$service run mypy src; done
+
+format:
+	uv run black packages services
 
 build:
 	uv build --all-packages --out-dir dist
