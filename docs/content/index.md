@@ -29,6 +29,10 @@ flowchart LR
 
 <div class="grid cards" markdown>
 
+- **[Guides](guides/index.md)**
+
+    For students joining the space, from a fresh Ubuntu install: the basics, then computer vision.
+
 - **[Project](project/index.md)**
 
     The libraries and services of PRIS, how they are deployed, and the status of each one.

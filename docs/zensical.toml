@@ -6,6 +6,25 @@ site_dir = "site"
 extra_css = ["stylesheets/extra.css"]
 nav = [
   { "Home" = "index.md" },
+  { "Guides" = [
+    "guides/index.md",
+    { "Basics" = [
+      "guides/basics/index.md",
+      { "The terminal" = "guides/basics/terminal.md" },
+      { "Python" = "guides/basics/python.md" },
+      { "Networking" = "guides/basics/networking.md" },
+      { "Containers" = "guides/basics/containers.md" },
+      { "Messaging" = "guides/basics/messaging.md" },
+      { "Protocol Buffers" = "guides/basics/protocol-buffers.md" },
+      { "Time synchronization" = "guides/basics/time-synchronization.md" },
+      { "Kubernetes" = "guides/basics/kubernetes.md" },
+    ] },
+    { "Computer vision" = [
+      "guides/computer-vision/index.md",
+      { "Frames and transformations" = "guides/computer-vision/frames-and-transformations.md" },
+      { "Camera model and calibration" = "guides/computer-vision/camera-model-and-calibration.md" },
+    ] },
+  ] },
   { "Project" = [
     "project/index.md",
     { "Status" = "project/status.md" },
