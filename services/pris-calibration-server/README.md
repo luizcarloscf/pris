@@ -1,6 +1,6 @@
 # pris-calibration-server
 
-Serves the calibration of each camera on `CalibrationServer.GetCalibration`: intrinsics, distortion, and the extrinsic transformations from the world frame. Services that turn pixels into positions, or the reverse, ask it for the calibrations of their cameras, usually with [`pris_common.calibrations.fetch_calibrations`](../../packages/pris-common/README.md), and never read calibration files themselves. A high-level introduction, with a runnable example, is in the [documentation](../../docs/content/services/pris-calibration-server.md).
+Serves the calibration of each camera on `CalibrationServer.GetCalibration`: intrinsics, distortion, and the extrinsic transformations from the world frame. Services that turn pixels into positions, or the reverse, ask it for the calibrations of their cameras, usually with [`pris_common.calibrations.fetch_calibrations`](../../packages/pris-common/README.md), and never read calibration files themselves. A high-level introduction, with a runnable example, is in the [documentation](../../docs/content/project/services/pris-calibration-server.md).
 
 ## Request
 
@@ -47,7 +47,7 @@ EOF
 uv run --project services/pris-calibration-server pris-calibration-server /tmp/options.json
 ```
 
-The image, built with `make image` in this folder or `make image SERVICE=pris-calibration-server` at the repository root, holds no calibrations: mount them at `/etc/calibrations`, and on one host your own options over `/etc/pris-calibration-server/options.json` (see [Docker images](../../docs/content/deployment/docker.md)). On Kubernetes, [`k8s/labvisio/pris-calibration-server/`](../../k8s/labvisio/pris-calibration-server/) mounts the ConfigMap `pris-calibration-server-calibrations`, created as [`calibrations/README.md`](../../calibrations/README.md) says (see [Kubernetes](../../docs/content/deployment/kubernetes.md)).
+The image, built with `make image` in this folder or `make image SERVICE=pris-calibration-server` at the repository root, holds no calibrations: mount them at `/etc/calibrations`, and on one host your own options over `/etc/pris-calibration-server/options.json` (see [Docker images](../../docs/content/project/deployment/docker.md)). On Kubernetes, [`k8s/labvisio/pris-calibration-server/`](../../k8s/labvisio/pris-calibration-server/) mounts the ConfigMap `pris-calibration-server-calibrations`, created as [`calibrations/README.md`](../../calibrations/README.md) says (see [Kubernetes](../../docs/content/project/deployment/kubernetes.md)).
 
 ## Development
 

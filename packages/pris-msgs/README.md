@@ -1,6 +1,6 @@
 # pris-msgs
 
-The [Protocol Buffers](https://protobuf.dev/) schemas shared by every component of PRIS, the Python code generated from them, and helpers to load and save messages as JSON and to convert tensors, images and annotations to NumPy arrays. A high-level introduction is in the [documentation](../../docs/content/libraries/pris-msgs.md).
+The [Protocol Buffers](https://protobuf.dev/) schemas shared by every component of PRIS, the Python code generated from them, and helpers to load and save messages as JSON and to convert tensors, images and annotations to NumPy arrays. A high-level introduction is in the [documentation](../../docs/content/project/libraries/pris-msgs.md).
 
 ```shell
 pip install "pris-msgs @ git+https://github.com/luizcarloscf/pris@pris-msgs-v1.0.0#subdirectory=packages/pris-msgs"

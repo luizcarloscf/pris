@@ -1,6 +1,6 @@
 # pris-wire
 
-Publish/subscribe and request/reply for PRIS over RabbitMQ (AMQP 0-9-1), built on [py-amqp](https://github.com/celery/py-amqp). A high-level introduction, with runnable examples, is in the [documentation](../../docs/content/libraries/pris-wire.md).
+Publish/subscribe and request/reply for PRIS over RabbitMQ (AMQP 0-9-1), built on [py-amqp](https://github.com/celery/py-amqp). A high-level introduction, with runnable examples, is in the [documentation](../../docs/content/project/libraries/pris-wire.md).
 
 ```shell
 pip install "pris-wire @ git+https://github.com/luizcarloscf/pris@pris-wire-v1.0.0#subdirectory=packages/pris-wire"

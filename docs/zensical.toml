@@ -6,27 +6,31 @@ site_dir = "site"
 extra_css = ["stylesheets/extra.css"]
 nav = [
   { "Home" = "index.md" },
-  { "Libraries" = [
-    { "pris-msgs" = "libraries/pris-msgs.md" },
-    { "pris-wire" = "libraries/pris-wire.md" },
-    { "OpenTelemetry instrumentation" = "libraries/opentelemetry-instrumentation-pris-wire.md" },
-    { "pris-common" = "libraries/pris-common.md" },
-  ] },
-  { "Services" = [
-    { "pris-aruco-detector" = "services/pris-aruco-detector.md" },
-    { "pris-aruco-localization" = "services/pris-aruco-localization.md" },
-    { "pris-broker-events" = "services/pris-broker-events.md" },
-    { "pris-calibration-server" = "services/pris-calibration-server.md" },
-    { "pris-camera-gateway" = "services/pris-camera-gateway.md" },
-    { "pris-frame-transformation" = "services/pris-frame-transformation.md" },
-  ] },
-  { "Deployment" = [
-    { "Libraries from git tags" = "deployment/git-dependencies.md" },
-    { "Docker images" = "deployment/docker.md" },
-    { "Kubernetes" = "deployment/kubernetes.md" },
-  ] },
   { "Project" = [
+    "project/index.md",
     { "Status" = "project/status.md" },
+    { "Libraries" = [
+      "project/libraries/index.md",
+      { "pris-msgs" = "project/libraries/pris-msgs.md" },
+      { "pris-wire" = "project/libraries/pris-wire.md" },
+      { "OpenTelemetry instrumentation" = "project/libraries/opentelemetry-instrumentation-pris-wire.md" },
+      { "pris-common" = "project/libraries/pris-common.md" },
+    ] },
+    { "Services" = [
+      "project/services/index.md",
+      { "pris-aruco-detector" = "project/services/pris-aruco-detector.md" },
+      { "pris-aruco-localization" = "project/services/pris-aruco-localization.md" },
+      { "pris-broker-events" = "project/services/pris-broker-events.md" },
+      { "pris-calibration-server" = "project/services/pris-calibration-server.md" },
+      { "pris-camera-gateway" = "project/services/pris-camera-gateway.md" },
+      { "pris-frame-transformation" = "project/services/pris-frame-transformation.md" },
+    ] },
+    { "Deployment" = [
+      "project/deployment/index.md",
+      { "Libraries from git tags" = "project/deployment/git-dependencies.md" },
+      { "Docker images" = "project/deployment/docker.md" },
+      { "Kubernetes" = "project/deployment/kubernetes.md" },
+    ] },
   ] },
 ]
 

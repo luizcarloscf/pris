@@ -1,6 +1,6 @@
 # opentelemetry-instrumentation-pris-wire
 
-OpenTelemetry tracing and metrics for [pris-wire](../pris-wire/README.md): `Channel.publish`, `Channel.consume` and `ServiceProvider.serve`. pris-wire has no OpenTelemetry dependency; this package wraps it from the outside, like the other `opentelemetry-instrumentation-*` packages. Its module is `opentelemetry.instrumentation.pris_wire`. A high-level introduction, with runnable examples, is in the [documentation](../../docs/content/libraries/opentelemetry-instrumentation-pris-wire.md).
+OpenTelemetry tracing and metrics for [pris-wire](../pris-wire/README.md): `Channel.publish`, `Channel.consume` and `ServiceProvider.serve`. pris-wire has no OpenTelemetry dependency; this package wraps it from the outside, like the other `opentelemetry-instrumentation-*` packages. Its module is `opentelemetry.instrumentation.pris_wire`. A high-level introduction, with runnable examples, is in the [documentation](../../docs/content/project/libraries/opentelemetry-instrumentation-pris-wire.md).
 
 ```shell
 pip install "opentelemetry-instrumentation-pris-wire[otlp] @ git+https://github.com/luizcarloscf/pris@opentelemetry-instrumentation-pris-wire-v0.1.0#subdirectory=packages/opentelemetry-instrumentation-pris-wire"

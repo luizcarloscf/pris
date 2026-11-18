@@ -1,6 +1,6 @@
 # pris-aruco-detector
 
-Detects [ArUco](https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html) markers on the cameras' frames, and publishes, for each frame, the id and the four corners of every marker it finds, in pixels. It only detects: it computes no pose and needs no calibration. Turning corners into positions in the space, by combining the cameras that see the same marker, is [pris-aruco-localization](../pris-aruco-localization/)'s job. A high-level introduction, with a runnable example, is in the [documentation](../../docs/content/services/pris-aruco-detector.md).
+Detects [ArUco](https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html) markers on the cameras' frames, and publishes, for each frame, the id and the four corners of every marker it finds, in pixels. It only detects: it computes no pose and needs no calibration. Turning corners into positions in the space, by combining the cameras that see the same marker, is [pris-aruco-localization](../pris-aruco-localization/)'s job. A high-level introduction, with a runnable example, is in the [documentation](../../docs/content/project/services/pris-aruco-detector.md).
 
 ## Interface
 
@@ -60,7 +60,7 @@ EOF
 uv run --project services/pris-aruco-detector pris-aruco-detector /tmp/options.json
 ```
 
-The image, built with `make image` in this folder or `make image SERVICE=pris-aruco-detector` at the repository root, runs with the cluster's options; on one host, mount your own over `/etc/pris-aruco-detector/options.json` (see [Docker images](../../docs/content/deployment/docker.md)). On Kubernetes, [`k8s/labvisio/pris-aruco-detector/`](../../k8s/labvisio/pris-aruco-detector/) runs it with replicas (see [Kubernetes](../../docs/content/deployment/kubernetes.md)).
+The image, built with `make image` in this folder or `make image SERVICE=pris-aruco-detector` at the repository root, runs with the cluster's options; on one host, mount your own over `/etc/pris-aruco-detector/options.json` (see [Docker images](../../docs/content/project/deployment/docker.md)). On Kubernetes, [`k8s/labvisio/pris-aruco-detector/`](../../k8s/labvisio/pris-aruco-detector/) runs it with replicas (see [Kubernetes](../../docs/content/project/deployment/kubernetes.md)).
 
 ## Development
 

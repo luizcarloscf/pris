@@ -1,6 +1,6 @@
 # pris-camera-gateway
 
-Publishes the frames of one [Blackfly GigE](https://www.flir.com/products/blackfly-gige/) or Blackfly S GigE camera, through Teledyne FLIR's [Spinnaker SDK](https://www.flir.com/products/spinnaker-sdk/), and serves requests to read and change its settings. One gateway runs per camera. It can trigger the camera itself at instants of the host clock, so that several cameras capture together, and it stamps each frame with its capture instant. A high-level introduction is in the [documentation](../../docs/content/services/pris-camera-gateway.md).
+Publishes the frames of one [Blackfly GigE](https://www.flir.com/products/blackfly-gige/) or Blackfly S GigE camera, through Teledyne FLIR's [Spinnaker SDK](https://www.flir.com/products/spinnaker-sdk/), and serves requests to read and change its settings. One gateway runs per camera. It can trigger the camera itself at instants of the host clock, so that several cameras capture together, and it stamps each frame with its capture instant. A high-level introduction is in the [documentation](../../docs/content/project/services/pris-camera-gateway.md).
 
 Ported from pris-spinnaker-gateway (is-spinnaker-gateway 0.7.0): Spinnaker only (no simulated driver), and everything on one thread.
 

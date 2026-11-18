@@ -1,6 +1,6 @@
 # pris-broker-events
 
-Publishes, for every topic, the queues that consume it, on `BrokerEvents.Consumers`, and again whenever that changes. Programs use it to discover what is running: which cameras are online, whether a service serves a topic, whether anyone listens to a topic at all. A high-level introduction, with a runnable example, is in the [documentation](../../docs/content/services/pris-broker-events.md).
+Publishes, for every topic, the queues that consume it, on `BrokerEvents.Consumers`, and again whenever that changes. Programs use it to discover what is running: which cameras are online, whether a service serves a topic, whether anyone listens to a topic at all. A high-level introduction, with a runnable example, is in the [documentation](../../docs/content/project/services/pris-broker-events.md).
 
 ## Published
 
@@ -50,7 +50,7 @@ EOF
 uv run --project services/pris-broker-events pris-broker-events /tmp/options.json
 ```
 
-The image, built with `make image` in this folder or `make image SERVICE=pris-broker-events` at the repository root, runs with the cluster's options; on one host, mount your own over `/etc/pris-broker-events/options.json` (see [Docker images](../../docs/content/deployment/docker.md)). On Kubernetes, [`k8s/labvisio/pris-broker-events/`](../../k8s/labvisio/pris-broker-events/) runs it (see [Kubernetes](../../docs/content/deployment/kubernetes.md)).
+The image, built with `make image` in this folder or `make image SERVICE=pris-broker-events` at the repository root, runs with the cluster's options; on one host, mount your own over `/etc/pris-broker-events/options.json` (see [Docker images](../../docs/content/project/deployment/docker.md)). On Kubernetes, [`k8s/labvisio/pris-broker-events/`](../../k8s/labvisio/pris-broker-events/) runs it (see [Kubernetes](../../docs/content/project/deployment/kubernetes.md)).
 
 ## Development
 

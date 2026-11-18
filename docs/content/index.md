@@ -29,8 +29,8 @@ flowchart LR
 
 <div class="grid cards" markdown>
 
-- **[Status](project/status.md)**
+- **[Project](project/index.md)**
 
-    What is done, what is still to check, and what is planned.
+    The libraries and services of PRIS, how they are deployed, and the status of each one.
 
 </div>
