@@ -18,7 +18,8 @@ DEFAULT_OPTIONS = Path(__file__).parents[1] / "etc" / "conf" / "options.json"
 @pytest.fixture
 def service(channel, topic):
     return ArucoDetectorService(
-        channel, MarkerDetector(DetectorOptions()),
+        channel,
+        MarkerDetector(DetectorOptions()),
         queue_name=topic + ".Detector",
         frame_topic=topic + ".{}.Frame",
         detection_topic=topic + ".{}.Detection",
@@ -90,7 +91,9 @@ def test_the_newest_frame_of_each_camera_is_detected(service, camera, scene, top
 
     detections = [camera.listener.consume(timeout=1.0) for _ in range(2)]
     assert [(m.topic, m.created_at) for m in detections] == [
-        (topic + ".0.Detection", 10.2), (topic + ".1.Detection", 10.0)]
+        (topic + ".0.Detection", 10.2),
+        (topic + ".1.Detection", 10.0),
+    ]
     camera0, camera1 = (m.unpack(ObjectAnnotations) for m in detections)
     assert sorted(marker.id for marker in camera0.objects) == [3, 4]
     assert camera0.frame_id == 0
@@ -99,10 +102,14 @@ def test_the_newest_frame_of_each_camera_is_detected(service, camera, scene, top
 
 
 def test_only_the_given_cameras(channel, camera, scene, topic):
-    service = ArucoDetectorService(channel, MarkerDetector(DetectorOptions()), camera_ids=[1],
-                                   queue_name=topic + ".Detector",
-                                   frame_topic=topic + ".{}.Frame",
-                                   detection_topic=topic + ".{}.Detection")
+    service = ArucoDetectorService(
+        channel,
+        MarkerDetector(DetectorOptions()),
+        camera_ids=[1],
+        queue_name=topic + ".Detector",
+        frame_topic=topic + ".{}.Frame",
+        detection_topic=topic + ".{}.Detection",
+    )
     camera(0, scene([(1, 50, 50)]), 1.0)
     camera(1, scene([(2, 50, 50)]), 2.0)
     time.sleep(0.2)

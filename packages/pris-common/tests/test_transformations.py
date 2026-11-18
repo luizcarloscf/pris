@@ -18,8 +18,10 @@ def get_transformation(request, context):
     reply = GetTransformationReply()
     for pair in request.ids:
         if (pair.source, pair.target) not in KNOWN:
-            return Status(StatusCode.NOT_FOUND,
-                          "no transformation from {} to {}".format(pair.source, pair.target))
+            return Status(
+                StatusCode.NOT_FOUND,
+                "no transformation from {} to {}".format(pair.source, pair.target),
+            )
         reply.transformations.append(KNOWN[(pair.source, pair.target)])
     return reply
 

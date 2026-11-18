@@ -42,7 +42,8 @@ def test_multi_hop_composition():
     point = np.array([0.3, -0.4, 2.0, 1.0])
     to_cam1 = graph.transformation([0, 1]).matrix
     np.testing.assert_allclose(
-        to_cam1 @ point, WORLD_TO_CAM1 @ invert(WORLD_TO_CAM0) @ point, atol=1e-12)
+        to_cam1 @ point, WORLD_TO_CAM1 @ invert(WORLD_TO_CAM0) @ point, atol=1e-12
+    )
 
 
 def test_hints_force_the_path():
@@ -50,8 +51,11 @@ def test_hints_force_the_path():
     graph.set(Edge(0, 1, rigid(0.1, [3.0, 0.0, 0.0]), static=True))
     assert graph.route([0, 1]) == (0, 1)
     assert graph.route([0, 1000, 1]) == (0, 1000, 1)
-    np.testing.assert_allclose(graph.transformation([0, 1000, 1]).matrix,
-                               WORLD_TO_CAM1 @ invert(WORLD_TO_CAM0), atol=1e-12)
+    np.testing.assert_allclose(
+        graph.transformation([0, 1000, 1]).matrix,
+        WORLD_TO_CAM1 @ invert(WORLD_TO_CAM0),
+        atol=1e-12,
+    )
 
 
 def test_unreachable_and_unknown_frames():
@@ -113,8 +117,11 @@ def test_dynamic_updates_never_replace_static_edges():
 def test_a_newer_edge_replaces_the_older_in_either_direction():
     graph = room()
     graph.set(Edge(1000, 100, invert(MARKER_TO_WORLD) @ rigid(0, [1, 0, 0]), stamp=5.1))
-    np.testing.assert_allclose(graph.transformation([100, 1000]).matrix,
-                               invert(invert(MARKER_TO_WORLD) @ rigid(0, [1, 0, 0])), atol=1e-12)
+    np.testing.assert_allclose(
+        graph.transformation([100, 1000]).matrix,
+        invert(invert(MARKER_TO_WORLD) @ rigid(0, [1, 0, 0])),
+        atol=1e-12,
+    )
     assert len(graph.edges) == 3
 
 

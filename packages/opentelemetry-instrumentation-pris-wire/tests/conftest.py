@@ -48,7 +48,7 @@ class Telemetry:
     def metrics(self):
         found = {}
         data = self.metric_reader.get_metrics_data()
-        for resource_metrics in (data.resource_metrics if data else []):
+        for resource_metrics in data.resource_metrics if data else []:
             for scope_metrics in resource_metrics.scope_metrics:
                 for metric in scope_metrics.metrics:
                     found.setdefault(metric.name, []).extend(metric.data.data_points)

@@ -42,15 +42,24 @@ def main() -> None:
         channel = Channel(uri=options.broker_uri)
         try:
             calibrations = fetch_calibrations(channel, options.camera_ids)
-            missing = [(options.reference_frame, id) for id, calibration in calibrations.items()
-                       if extrinsic_from(calibration, options.reference_frame) is None]
+            missing = [
+                (options.reference_frame, id)
+                for id, calibration in calibrations.items()
+                if extrinsic_from(calibration, options.reference_frame) is None
+            ]
             composed = fetch_transformations(channel, missing) if missing else {}
             for source, target in missing:
-                logger.info("Camera {}: extrinsic from {} composed by the frame graph", target,
-                            source)
-            cameras = {id: camera_from_calibration(calibration, options.reference_frame,
-                                                   composed.get((options.reference_frame, id)))
-                       for id, calibration in calibrations.items()}
+                logger.info(
+                    "Camera {}: extrinsic from {} composed by the frame graph", target, source
+                )
+            cameras = {
+                id: camera_from_calibration(
+                    calibration,
+                    options.reference_frame,
+                    composed.get((options.reference_frame, id)),
+                )
+                for id, calibration in calibrations.items()
+            }
         except (socket.timeout, RuntimeError, ValueError) as error:
             logger.critical("unable to use the calibrations: {}", error)
         ArucoLocalization(channel, cameras, options).run()

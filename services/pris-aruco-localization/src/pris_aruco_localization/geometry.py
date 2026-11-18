@@ -58,8 +58,9 @@ class Camera:
         return np.array([self.intrinsic[0, 0], self.intrinsic[1, 1]])
 
 
-def extrinsic_from(calibration: CameraCalibration,
-                   reference_frame: int) -> FrameTransformation | None:
+def extrinsic_from(
+    calibration: CameraCalibration, reference_frame: int
+) -> FrameTransformation | None:
     """Return the calibration's extrinsic from `reference_frame` to the camera, or None."""
     for extrinsic in calibration.extrinsic:
         if extrinsic.source == reference_frame and extrinsic.target == calibration.id:
@@ -67,8 +68,11 @@ def extrinsic_from(calibration: CameraCalibration,
     return None
 
 
-def camera_from_calibration(calibration: CameraCalibration, reference_frame: int,
-                            extrinsic: FrameTransformation | None = None) -> Camera:
+def camera_from_calibration(
+    calibration: CameraCalibration,
+    reference_frame: int,
+    extrinsic: FrameTransformation | None = None,
+) -> Camera:
     """Return the camera of a calibration, with its extrinsic from `reference_frame`: `extrinsic`
     if given, such as one composed by pris-frame-transformation, else the calibration's own.
 
@@ -79,8 +83,9 @@ def camera_from_calibration(calibration: CameraCalibration, reference_frame: int
     if extrinsic is None:
         extrinsic = extrinsic_from(calibration, reference_frame)
     if extrinsic is None:
-        raise ValueError("camera {} has no extrinsic from frame {}".format(
-            calibration.id, reference_frame))
+        raise ValueError(
+            "camera {} has no extrinsic from frame {}".format(calibration.id, reference_frame)
+        )
     camera = Camera(
         id=calibration.id,
         intrinsic=to_array(calibration.intrinsic).astype(np.float64),
@@ -90,8 +95,11 @@ def camera_from_calibration(calibration: CameraCalibration, reference_frame: int
         height=calibration.resolution.height,
     )
     if camera.intrinsic.shape != (3, 3) or camera.extrinsic.shape != (4, 4):
-        raise ValueError("camera {}: intrinsic {} and extrinsic {}, expected 3x3 and 4x4".format(
-            camera.id, camera.intrinsic.shape, camera.extrinsic.shape))
+        raise ValueError(
+            "camera {}: intrinsic {} and extrinsic {}, expected 3x3 and 4x4".format(
+                camera.id, camera.intrinsic.shape, camera.extrinsic.shape
+            )
+        )
     if camera.width <= 0 or camera.height <= 0:
         raise ValueError("camera {} has no calibration resolution".format(camera.id))
     return camera
@@ -100,8 +108,9 @@ def camera_from_calibration(calibration: CameraCalibration, reference_frame: int
 def marker_corners(length: float) -> Array:
     """Return the 4x3 corners of a square marker of side `length`, in the marker frame."""
     half = length / 2.0
-    return np.array([[-half, half, 0.0], [half, half, 0.0],
-                     [half, -half, 0.0], [-half, -half, 0.0]])
+    return np.array(
+        [[-half, half, 0.0], [half, half, 0.0], [half, -half, 0.0], [-half, -half, 0.0]]
+    )
 
 
 def undistort(camera: Camera, pixels: npt.ArrayLike) -> Array:
@@ -178,17 +187,20 @@ def project(camera_extrinsic: Array, pose: Array, model: Array) -> Array:
 
 def residuals(pose: Array, cameras: Sequence[Camera], normalized: Array, model: Array) -> Array:
     """Return the CxNx2 reprojection errors in pixels: normalized error times focal length."""
-    return np.stack([
-        (project(camera.extrinsic, pose, model) - observed) * camera.focal
-        for camera, observed in zip(cameras, normalized)
-    ])
+    return np.stack(
+        [
+            (project(camera.extrinsic, pose, model) - observed) * camera.focal
+            for camera, observed in zip(cameras, normalized)
+        ]
+    )
 
 
-def camera_errors(pose: Array, cameras: Sequence[Camera], normalized: Array,
-                  model: Array) -> Array:
+def camera_errors(
+    pose: Array, cameras: Sequence[Camera], normalized: Array, model: Array
+) -> Array:
     """Return the RMS reprojection error of each camera, in pixels."""
     errors = residuals(pose, cameras, normalized, model)
-    return np.asarray(np.sqrt((errors ** 2).sum(axis=2).mean(axis=1)), dtype=np.float64)
+    return np.asarray(np.sqrt((errors**2).sum(axis=2).mean(axis=1)), dtype=np.float64)
 
 
 def _cost(pose: Array, cameras: Sequence[Camera], normalized: Array, model: Array) -> float:
@@ -208,11 +220,10 @@ def single_view_poses(camera: Camera, normalized: Array, model: Array) -> list[A
     so that other cameras can tell them apart.
     """
     count, rotations, translations, _ = cv2.solvePnPGeneric(
-        model, normalized.reshape(-1, 1, 2), np.eye(3), np.zeros(5),
-        flags=cv2.SOLVEPNP_IPPE_SQUARE)
+        model, normalized.reshape(-1, 1, 2), np.eye(3), np.zeros(5), flags=cv2.SOLVEPNP_IPPE_SQUARE
+    )
     camera_to_reference = invert(camera.extrinsic)
-    return [camera_to_reference @ to_matrix(rotations[i], translations[i])
-            for i in range(count)]
+    return [camera_to_reference @ to_matrix(rotations[i], translations[i]) for i in range(count)]
 
 
 def initial_poses(cameras: Sequence[Camera], normalized: Array, model: Array) -> list[Array]:
@@ -233,8 +244,9 @@ def _exp(delta: Array) -> Array:
     return to_matrix(delta[:3], delta[3:])
 
 
-def refine(pose: Array, cameras: Sequence[Camera], normalized: Array, model: Array,
-           iterations: int = 30) -> Array:
+def refine(
+    pose: Array, cameras: Sequence[Camera], normalized: Array, model: Array, iterations: int = 30
+) -> Array:
     """Refine a pose with Levenberg-Marquardt, minimizing the reprojection error of every point.
 
     The pose is updated in the marker frame (pose @ exp(delta)), whose origin is the marker's
@@ -256,8 +268,9 @@ def refine(pose: Array, cameras: Sequence[Camera], normalized: Array, model: Arr
         gradient = jacobian.T @ error
         while True:
             try:
-                delta = np.linalg.solve(hessian + damping * np.diag(np.diag(hessian) + 1e-12),
-                                        -gradient)
+                delta = np.linalg.solve(
+                    hessian + damping * np.diag(np.diag(hessian) + 1e-12), -gradient
+                )
             except np.linalg.LinAlgError:
                 return pose
             candidate = pose @ _exp(delta)
@@ -310,8 +323,9 @@ class Estimate:
         return tuple(self.camera_errors)
 
 
-def localize(observations: Sequence[Observation], length: float,
-             max_camera_error: float) -> Estimate | None:
+def localize(
+    observations: Sequence[Observation], length: float, max_camera_error: float
+) -> Estimate | None:
     """Estimate the pose of a marker of side `length` from its corners in one or more cameras.
 
     Candidates from triangulation and from each camera alone are scored by their reprojection
@@ -340,7 +354,7 @@ def localize(observations: Sequence[Observation], length: float,
             rejected.append(cameras[worst].id)
             del cameras[worst], normalized[worst]
             continue
-        total = float(np.sqrt((errors ** 2).mean()))
+        total = float(np.sqrt((errors**2).mean()))
         return Estimate(
             pose=pose,
             error=total,

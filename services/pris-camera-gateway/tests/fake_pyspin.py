@@ -2,6 +2,7 @@
 
 Node maps record every write, so tests can check which nodes were set and in which order.
 """
+
 from typing import Any, Callable, Dict, List, Set, Tuple
 from unittest.mock import MagicMock
 
@@ -133,6 +134,7 @@ class FakeImage:
 
     def GetNDArray(self) -> Any:
         import numpy as np
+
         return np.zeros((8, 8, 3), dtype=np.uint8)
 
     def Release(self) -> None:

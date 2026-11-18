@@ -19,6 +19,7 @@ from pris_camera_gateway.service import CameraGateway
 @pytest.fixture
 def gateway(channel, connect, make_camera, prefix):
     """A gateway on a fake camera, with a client channel listening to its topics."""
+
     def make(**fields):
         camera, fake = make_camera(**fields)
         service = CameraGateway(channel, camera, camera.options, prefix=prefix)
@@ -31,13 +32,16 @@ def gateway(channel, connect, make_camera, prefix):
         frames.subscribe(f"{prefix}.0.Timestamp")
         service.client, service.fake = client, fake
         return service
+
     return make
 
 
 def request(service, method, content):
     replies = Subscription(service.client)
-    service.client.publish(Message(content=content, reply_to=replies),
-                           topic=f"{service.frame_topic.rsplit('.', 1)[0]}.{method}")
+    service.client.publish(
+        Message(content=content, reply_to=replies),
+        topic=f"{service.frame_topic.rsplit('.', 1)[0]}.{method}",
+    )
     time.sleep(0.2)
 
 

@@ -19,11 +19,14 @@ def test_load(tmp_path):
     assert options.delay.value == 0.25
 
 
-@pytest.mark.parametrize("text", [
-    '{"frequency": 10.0, "unknown": 1}',
-    '{"frequency": ',
-    '{"frequency": "fast"}',
-])
+@pytest.mark.parametrize(
+    "text",
+    [
+        '{"frequency": 10.0, "unknown": 1}',
+        '{"frequency": ',
+        '{"frequency": "fast"}',
+    ],
+)
 def test_load_invalid(tmp_path, text):
     path = write(tmp_path, text)
     with pytest.raises(ParseError):

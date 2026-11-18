@@ -37,9 +37,11 @@ def test_empty_samples():
 
 def test_constant_offset():
     mapper = ClockMapper(ns_per_tick=1.0)
-    mapper.update([
-        make_sample(camera_ns=5_000 * MS, offset_ns=HOST_EPOCH_NS, round_trip_ns=200_000),
-    ])
+    mapper.update(
+        [
+            make_sample(camera_ns=5_000 * MS, offset_ns=HOST_EPOCH_NS, round_trip_ns=200_000),
+        ]
+    )
     assert mapper.to_host_ns(5_000 * MS) == 5_000 * MS + HOST_EPOCH_NS
     assert mapper.to_host_ns(5_100 * MS) == 5_100 * MS + HOST_EPOCH_NS
 
@@ -62,9 +64,11 @@ def test_tick_frequency_conversion():
     ns_per_tick = 8.0
     mapper = ClockMapper(ns_per_tick=ns_per_tick)
     camera_ns = 2_000 * MS
-    mapper.update([
-        make_sample(camera_ns, HOST_EPOCH_NS, round_trip_ns=100_000, ns_per_tick=ns_per_tick),
-    ])
+    mapper.update(
+        [
+            make_sample(camera_ns, HOST_EPOCH_NS, round_trip_ns=100_000, ns_per_tick=ns_per_tick),
+        ]
+    )
     later_ticks = round((camera_ns + 40 * MS) / ns_per_tick)
     assert mapper.to_host_ns(later_ticks) == camera_ns + 40 * MS + HOST_EPOCH_NS
 

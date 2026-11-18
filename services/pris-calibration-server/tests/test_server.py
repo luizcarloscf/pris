@@ -15,8 +15,9 @@ CALIBRATIONS = {0: CameraCalibration(id=0), 3: CameraCalibration(id=3, error=0.5
 def call(channel, *ids):
     server = CalibrationServer(channel, CALIBRATIONS)
     replies = Subscription(channel)
-    channel.publish(Message(content=GetCalibrationRequest(ids=ids), reply_to=replies),
-                    topic=server.topic)
+    channel.publish(
+        Message(content=GetCalibrationRequest(ids=ids), reply_to=replies), topic=server.topic
+    )
     server.provider.serve(channel.consume(timeout=1.0))
     return channel.consume(timeout=1.0)
 
@@ -38,8 +39,10 @@ def test_calibrations_in_the_order_requested(channel):
     reply = call(channel, 3, 0)
 
     assert reply.status.code == StatusCode.OK
-    assert list(reply.unpack(GetCalibrationReply).calibrations) == [CALIBRATIONS[3],
-                                                                    CALIBRATIONS[0]]
+    assert list(reply.unpack(GetCalibrationReply).calibrations) == [
+        CALIBRATIONS[3],
+        CALIBRATIONS[0],
+    ]
 
 
 def test_no_ids_no_calibrations(channel):

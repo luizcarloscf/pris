@@ -97,8 +97,9 @@ def test_repository_calibrations(site):
             assert tf.shape == (4, 4), id
             np.testing.assert_allclose(tf[3], [0, 0, 0, 1], err_msg=str(id))
             rotation = tf[:3, :3]
-            np.testing.assert_allclose(rotation @ rotation.T, np.eye(3), atol=1e-6,
-                                       err_msg=str(id))
+            np.testing.assert_allclose(
+                rotation @ rotation.T, np.eye(3), atol=1e-6, err_msg=str(id)
+            )
             assert np.linalg.det(rotation) == pytest.approx(1.0, abs=1e-6), id
 
 

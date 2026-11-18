@@ -51,14 +51,16 @@ def test_an_extrinsic_from_another_world(scene):
     calibration = scene.load(0)
     world_to_corridor = to_matrix([0, 0, np.pi / 2], [10, 0, 0])
     corridor_to_camera = to_array(extrinsic_from(calibration, WORLD).tf) @ invert(
-        world_to_corridor)
+        world_to_corridor
+    )
     composed = FrameTransformation(source=2000, target=0, tf=to_tensor(corridor_to_camera))
 
     camera = camera_from_calibration(calibration, 2000, composed)
 
     np.testing.assert_allclose(camera.extrinsic, corridor_to_camera)
     np.testing.assert_allclose(
-        camera_from_calibration(calibration, WORLD, composed).extrinsic, corridor_to_camera)
+        camera_from_calibration(calibration, WORLD, composed).extrinsic, corridor_to_camera
+    )
 
 
 def test_calibration_with_bad_matrices(scene):
@@ -93,9 +95,12 @@ def test_scaled_intrinsics_follow_the_resolution(cameras):
 def test_triangulate_known_points(cameras):
     points = np.array([[0.0, 0.0, 0.0], [0.5, -0.3, 1.2], [-1.0, 0.8, 0.1]])
     extrinsics = np.stack([camera.extrinsic for camera in cameras])
-    normalized = np.stack([
-        transform(camera.extrinsic, points)[:, :2] / transform(camera.extrinsic, points)[:, 2:]
-        for camera in cameras])
+    normalized = np.stack(
+        [
+            transform(camera.extrinsic, points)[:, :2] / transform(camera.extrinsic, points)[:, 2:]
+            for camera in cameras
+        ]
+    )
     np.testing.assert_allclose(triangulate(extrinsics, normalized), points, atol=1e-9)
     np.testing.assert_allclose(triangulate(extrinsics[:2], normalized[:2]), points, atol=1e-9)
 
@@ -109,7 +114,7 @@ def test_kabsch_recovers_a_transformation():
 
 def test_kabsch_never_reflects():
     model = marker_corners(1.0)
-    mirrored = model * [1.0, -1.0, 1.0]     # a reflection of the planar model
+    mirrored = model * [1.0, -1.0, 1.0]  # a reflection of the planar model
     for points in (mirrored, mirrored + np.random.default_rng(2).normal(0, 0.05, (4, 3))):
         rotation = kabsch(model, points)[:3, :3]
         assert np.linalg.det(rotation) == pytest.approx(1.0)
@@ -153,8 +158,9 @@ def test_multi_view_beats_a_single_camera_with_noise(cameras, scene):
     rng = np.random.default_rng(3)
     single, multi = [], []
     for pose in scene.random_poses(200, seed=4):
-        observations = [Observation(c, scene.pixels(c, pose) + rng.normal(0, 0.5, (4, 2)))
-                        for c in cameras]
+        observations = [
+            Observation(c, scene.pixels(c, pose) + rng.normal(0, 0.5, (4, 2))) for c in cameras
+        ]
         if not all(scene.visible(o.camera, o.corners, pose) for o in observations):
             continue
         multi.append(scene.errors(localize(observations, LENGTH, MAX_CAMERA_ERROR), pose))
@@ -200,8 +206,9 @@ def test_corners_in_the_wrong_order_are_rejected(cameras, scene):
 def test_noise_within_the_threshold_keeps_every_camera(cameras, scene):
     rng = np.random.default_rng(5)
     pose = scene.marker_pose(0.0, 0.0, 0.5, 0.2, 0.1, 0.0)
-    observations = [Observation(c, scene.pixels(c, pose) + rng.normal(0, 1.0, (4, 2)))
-                    for c in cameras]
+    observations = [
+        Observation(c, scene.pixels(c, pose) + rng.normal(0, 1.0, (4, 2))) for c in cameras
+    ]
 
     estimate = localize(observations, LENGTH, MAX_CAMERA_ERROR)
 
@@ -247,6 +254,7 @@ def test_a_marker_seen_edge_on(cameras, scene):
 
 
 def test_scaled_copies_the_intrinsic():
-    camera = Camera(id=9, intrinsic=np.eye(3), distortion=np.zeros(5), extrinsic=np.eye(4),
-                    width=10, height=10)
+    camera = Camera(
+        id=9, intrinsic=np.eye(3), distortion=np.zeros(5), extrinsic=np.eye(4), width=10, height=10
+    )
     assert camera.scaled(20, 20).intrinsic is not camera.intrinsic

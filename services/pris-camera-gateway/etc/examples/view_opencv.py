@@ -2,6 +2,7 @@
 
 E.g.: python etc/examples/view_opencv.py 10.20.6.0
 """
+
 import sys
 from pathlib import Path
 
@@ -25,8 +26,9 @@ def main() -> None:
             capture = camera.grab(3000)
             if capture is None:
                 continue
-            array = cv2.imdecode(np.frombuffer(capture.image.data, dtype=np.uint8),
-                                 cv2.IMREAD_COLOR)
+            array = cv2.imdecode(
+                np.frombuffer(capture.image.data, dtype=np.uint8), cv2.IMREAD_COLOR
+            )
             cv2.imshow("frame", array)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break

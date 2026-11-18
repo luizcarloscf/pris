@@ -17,8 +17,9 @@ def render(markers, size=(480, 640), dictionary=cv2.aruco.DICT_4X4_50, marker_si
     canvas = np.full(size, 255, dtype=np.uint8)
     aruco_dictionary = cv2.aruco.getPredefinedDictionary(dictionary)
     for id, x, y in markers:
-        canvas[y:y + marker_size, x:x + marker_size] = cv2.aruco.generateImageMarker(
-            aruco_dictionary, id, marker_size)
+        canvas[y : y + marker_size, x : x + marker_size] = cv2.aruco.generateImageMarker(
+            aruco_dictionary, id, marker_size
+        )
     return canvas
 
 
@@ -28,6 +29,7 @@ def scene():
         ok, data = cv2.imencode(extension, render(markers, **kwargs))
         assert ok
         return Image(data=data.tobytes())
+
     return make
 
 

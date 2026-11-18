@@ -51,7 +51,8 @@ def setup_telemetry(
 
     tracer_provider = TracerProvider(resource=resource)
     tracer_provider.add_span_processor(
-        BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint + "/v1/traces")))
+        BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint + "/v1/traces"))
+    )
     meter_provider = MeterProvider(
         resource=resource,
         metric_readers=[

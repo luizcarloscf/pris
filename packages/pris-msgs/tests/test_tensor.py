@@ -7,20 +7,27 @@ from pris_msgs.utils.tensor import to_array, to_tensor
 
 def tensor(type, values, *dims):
     """Tensor with the given (size, name) dims."""
-    field = {DataType.FLOAT_TYPE: "floats", DataType.DOUBLE_TYPE: "doubles",
-             DataType.INT32_TYPE: "ints32", DataType.INT64_TYPE: "ints64"}[type]
+    field = {
+        DataType.FLOAT_TYPE: "floats",
+        DataType.DOUBLE_TYPE: "doubles",
+        DataType.INT32_TYPE: "ints32",
+        DataType.INT64_TYPE: "ints64",
+    }[type]
     result = Tensor(type=type, **{field: values})
     for size, name in dims:
         result.shape.dims.add(size=size, name=name)
     return result
 
 
-@pytest.mark.parametrize("dtype, type", [
-    (np.float32, DataType.FLOAT_TYPE),
-    (np.float64, DataType.DOUBLE_TYPE),
-    (np.int32, DataType.INT32_TYPE),
-    (np.int64, DataType.INT64_TYPE),
-])
+@pytest.mark.parametrize(
+    "dtype, type",
+    [
+        (np.float32, DataType.FLOAT_TYPE),
+        (np.float64, DataType.DOUBLE_TYPE),
+        (np.int32, DataType.INT32_TYPE),
+        (np.int64, DataType.INT64_TYPE),
+    ],
+)
 @pytest.mark.parametrize("shape", [(5,), (2, 3), (2, 3, 4), (0, 3)])
 def test_round_trip(dtype, type, shape):
     array = np.arange(int(np.prod(shape)), dtype=dtype).reshape(shape) - 3
@@ -63,23 +70,29 @@ def test_lists_are_accepted():
     np.testing.assert_array_equal(to_array(result), [[1.5, 2.5]])
 
 
-@pytest.mark.parametrize("value, error", [
-    (np.array([1], dtype=np.uint8), TypeError),
-    (np.array([True, False]), TypeError),
-    (np.array(["a"]), TypeError),
-    (np.zeros(()), ValueError),
-])
+@pytest.mark.parametrize(
+    "value, error",
+    [
+        (np.array([1], dtype=np.uint8), TypeError),
+        (np.array([True, False]), TypeError),
+        (np.array(["a"]), TypeError),
+        (np.zeros(()), ValueError),
+    ],
+)
 def test_to_tensor_errors(value, error):
     with pytest.raises(error):
         to_tensor(value)
 
 
-@pytest.mark.parametrize("value, message", [
-    (Tensor(), "no shape"),
-    (Tensor(type=DataType.UNKNOWN_TYPE, shape={"dims": [{"size": 1}]}), "UNKNOWN_TYPE"),
-    (tensor(DataType.DOUBLE_TYPE, [1, 2, 3], (2, "rows"), (2, "cols")), "cannot reshape"),
-    (tensor(DataType.DOUBLE_TYPE, [], (-1, "rows")), "negative"),
-])
+@pytest.mark.parametrize(
+    "value, message",
+    [
+        (Tensor(), "no shape"),
+        (Tensor(type=DataType.UNKNOWN_TYPE, shape={"dims": [{"size": 1}]}), "UNKNOWN_TYPE"),
+        (tensor(DataType.DOUBLE_TYPE, [1, 2, 3], (2, "rows"), (2, "cols")), "cannot reshape"),
+        (tensor(DataType.DOUBLE_TYPE, [], (-1, "rows")), "negative"),
+    ],
+)
 def test_to_array_errors(value, message):
     with pytest.raises(ValueError, match=message):
         to_array(value)

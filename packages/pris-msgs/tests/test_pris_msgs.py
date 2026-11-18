@@ -7,8 +7,9 @@ PROTOS = ["camera", "common", "image", "power", "robot"]
 
 
 def test_protos_are_packaged():
-    packaged = sorted(f.name for f in resources.files("pris_msgs").iterdir()
-                      if f.name.endswith(".proto"))
+    packaged = sorted(
+        f.name for f in resources.files("pris_msgs").iterdir() if f.name.endswith(".proto")
+    )
     assert packaged == [f"{name}.proto" for name in PROTOS]
 
 

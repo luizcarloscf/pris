@@ -20,9 +20,9 @@ def main() -> None:
     try:
         reply = channel.consume(timeout=3.0)
         struct = reply.unpack(Empty)
-        print('RPC Status:', reply.status, '\nReply:', struct)
+        print("RPC Status:", reply.status, "\nReply:", struct)
     except socket.timeout:
-        print('No reply :(')
+        print("No reply :(")
 
 
 if __name__ == "__main__":

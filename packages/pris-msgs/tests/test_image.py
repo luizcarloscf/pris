@@ -50,11 +50,14 @@ def test_turbojpeg_round_trip(gray):
     assert np.abs(back.astype(int) - array).mean() < 3
 
 
-@pytest.mark.parametrize("image, error", [
-    (Image(), cv2.error),
-    (Image(uri="http://camera/frame.jpeg"), cv2.error),
-    (Image(data=b"not an image"), ValueError),
-])
+@pytest.mark.parametrize(
+    "image, error",
+    [
+        (Image(), cv2.error),
+        (Image(uri="http://camera/frame.jpeg"), cv2.error),
+        (Image(data=b"not an image"), ValueError),
+    ],
+)
 def test_to_array_errors(image, error):
     with pytest.raises(error):
         to_array(image)

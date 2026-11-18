@@ -34,8 +34,9 @@ def main() -> None:
     except (OSError, ValueError, ParseError) as error:
         logger.critical("unable to load the calibrations: {}", error)
     for id, calibration in sorted(calibrations.items()):
-        logger.info("Calibration id={} calibrated_at={}",
-                    id, calibration.calibrated_at.ToJsonString())
+        logger.info(
+            "Calibration id={} calibrated_at={}", id, calibration.calibrated_at.ToJsonString()
+        )
 
     shutdown_telemetry = setup_telemetry(
         options.telemetry.otlp_endpoint,

@@ -8,8 +8,11 @@ from pris_broker_events.management import fetch_bindings
 def test_the_broker_bindings(management_uri):
     bindings = fetch_bindings(management_uri, timeout=5.0)
 
-    assert {"source": "amq.rabbitmq.event", "destination": "pris", "routing_key": "#"}.items() \
-        <= next(b for b in bindings if b["source"] == "amq.rabbitmq.event").items()
+    assert {
+        "source": "amq.rabbitmq.event",
+        "destination": "pris",
+        "routing_key": "#",
+    }.items() <= next(b for b in bindings if b["source"] == "amq.rabbitmq.event").items()
 
 
 def test_an_unreachable_api_raises():

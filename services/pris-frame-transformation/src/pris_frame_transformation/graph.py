@@ -148,8 +148,11 @@ class FrameGraph(object):
         Returns:
             The pairs of the removed edges.
         """
-        expired = [key for key, edge in self.edges.items()
-                   if edge.expiration is not None and edge.expiration <= now]
+        expired = [
+            key
+            for key, edge in self.edges.items()
+            if edge.expiration is not None and edge.expiration <= now
+        ]
         for key in expired:
             self.remove(*key)
         return expired

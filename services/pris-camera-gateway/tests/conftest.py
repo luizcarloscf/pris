@@ -34,6 +34,7 @@ def camera_options(**fields):
 @pytest.fixture
 def make_camera():
     """A SpinnakerCamera connected to a fake camera, which is returned with it."""
+
     def make(fake=None, **fields):
         fake = fake or fake_pyspin.FakeCamera()
         camera = SpinnakerCamera(camera_options(**fields))
@@ -43,6 +44,7 @@ def make_camera():
         camera.processor.Convert.side_effect = lambda image, pixel_format: image
         camera.connect()
         return camera, fake
+
     return make
 
 

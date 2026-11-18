@@ -5,16 +5,19 @@ from pris_frame_transformation.graph import Edge, FrameGraph
 from pris_frame_transformation.watch import Watches, parse_topic, topic_for
 
 
-@pytest.mark.parametrize("topic, path", [
-    ("FrameTransformation.100.1000", (100, 1000)),
-    ("FrameTransformation.100.0.1000", (100, 0, 1000)),
-    ("FrameTransformation.-1.5", (-1, 5)),
-    ("FrameTransformation.100", None),
-    ("FrameTransformation.GetTransformation", None),
-    ("FrameTransformation.1.x", None),
-    ("ArUco.FrameTransformations", None),
-    ("Other.FrameTransformation.1.2", None),
-])
+@pytest.mark.parametrize(
+    "topic, path",
+    [
+        ("FrameTransformation.100.1000", (100, 1000)),
+        ("FrameTransformation.100.0.1000", (100, 0, 1000)),
+        ("FrameTransformation.-1.5", (-1, 5)),
+        ("FrameTransformation.100", None),
+        ("FrameTransformation.GetTransformation", None),
+        ("FrameTransformation.1.x", None),
+        ("ArUco.FrameTransformations", None),
+        ("Other.FrameTransformation.1.2", None),
+    ],
+)
 def test_parse_topic(topic, path):
     assert parse_topic(topic) == path
 
@@ -41,8 +44,9 @@ def due(watches, frames):
 
 def test_consumers_select_transformation_topics():
     watches = Watches()
-    added, removed = watches.set_consumers(listening(
-        "FrameTransformation.100.0", "ArUco.0.Detection", "FrameTransformation.0.1000"))
+    added, removed = watches.set_consumers(
+        listening("FrameTransformation.100.0", "ArUco.0.Detection", "FrameTransformation.0.1000")
+    )
     assert added == {(100, 0), (0, 1000)} and removed == set()
     added, removed = watches.set_consumers(listening("FrameTransformation.0.1000"))
     assert added == set() and removed == {(100, 0)}
@@ -93,7 +97,7 @@ def test_due_returns_the_transformation():
     frames = graph()
     watches = Watches()
     watches.set_consumers(listening("FrameTransformation.100.1000.0"))
-    (path, transformation), = watches.due(frames)
+    ((path, transformation),) = watches.due(frames)
     assert path == (100, 1000, 0)
     assert transformation.route == (100, 1000, 0)
     assert transformation.expiration == 2.0

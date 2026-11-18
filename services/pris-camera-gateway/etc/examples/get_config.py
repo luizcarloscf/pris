@@ -19,9 +19,9 @@ def main() -> None:
     try:
         reply = channel.consume(timeout=3.0)
         unpacked_msg = reply.unpack(CameraConfig)
-        print('RPC Status:', reply.status, '\nReply:', unpacked_msg)
+        print("RPC Status:", reply.status, "\nReply:", unpacked_msg)
     except socket.timeout:
-        print('No reply :(')
+        print("No reply :(")
 
 
 if __name__ == "__main__":

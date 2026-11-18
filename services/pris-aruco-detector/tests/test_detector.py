@@ -48,11 +48,14 @@ def test_other_dictionary_is_ignored(scene):
     assert [marker.id for marker in MarkerDetector(options).detect(image).objects] == [3]
 
 
-@pytest.mark.parametrize("image, error", [
-    (Image(), cv2.error),
-    (Image(uri="http://camera/frame.jpg"), cv2.error),
-    (Image(data=b"not an image"), ValueError),
-])
+@pytest.mark.parametrize(
+    "image, error",
+    [
+        (Image(), cv2.error),
+        (Image(uri="http://camera/frame.jpg"), cv2.error),
+        (Image(data=b"not an image"), ValueError),
+    ],
+)
 def test_undecodable_images(image, error):
     with pytest.raises(error):
         MarkerDetector(DetectorOptions()).detect(image)

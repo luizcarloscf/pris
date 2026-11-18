@@ -23,12 +23,18 @@ ConsumeHook = Callable[[Span, Any], None]
 RequestHook = Callable[[Span, Any], None]
 ResponseHook = Callable[[Span, Any], None]
 
-_SERVER_ERRORS = frozenset({
-    "UNKNOWN", "DEADLINE_EXCEEDED", "UNIMPLEMENTED", "INTERNAL_ERROR",
-})
+_SERVER_ERRORS = frozenset(
+    {
+        "UNKNOWN",
+        "DEADLINE_EXCEEDED",
+        "UNIMPLEMENTED",
+        "INTERNAL_ERROR",
+    }
+)
 
 _current_reply: ContextVar[dict[str, Any] | None] = ContextVar(
-    "pris_wire_current_reply", default=None)
+    "pris_wire_current_reply", default=None
+)
 
 
 class _ReplyInterceptor:
@@ -88,7 +94,7 @@ class Telemetry:
             sc.MESSAGING_CLIENT_OPERATION_DURATION,
             unit="s",
             description="Duration of messaging operation initiated by a producer or "
-                        "consumer client.",
+            "consumer client.",
             explicit_bucket_boundaries_advisory=sc.DURATION_BUCKETS,
         )
         self.sent_messages = meter.create_counter(
@@ -114,8 +120,13 @@ class Telemetry:
         self._reply_interceptor = _ReplyInterceptor()
         self._providers: weakref.WeakSet[Any] = weakref.WeakSet()
 
-    def publish(self, wrapped: Callable[..., Any], instance: Any,
-                args: tuple[Any, ...], kwargs: dict[str, Any]) -> Any:
+    def publish(
+        self,
+        wrapped: Callable[..., Any],
+        instance: Any,
+        args: tuple[Any, ...],
+        kwargs: dict[str, Any],
+    ) -> Any:
         message, topic = _bind_publish(*args, **kwargs)
         routing_key = topic if topic else (message.topic if message.has_topic() else None)
         if not routing_key:
@@ -140,8 +151,9 @@ class Telemetry:
             sc.MESSAGING_RABBITMQ_ROUTING_KEY: routing_key,
         }
         if message.has_correlation_id():
-            span_attributes[sc.MESSAGING_MESSAGE_CONVERSATION_ID] = \
-                "{:X}".format(message.correlation_id)
+            span_attributes[sc.MESSAGING_MESSAGE_CONVERSATION_ID] = "{:X}".format(
+                message.correlation_id
+            )
         if message.has_body():
             span_attributes[sc.MESSAGING_MESSAGE_BODY_SIZE] = len(message.body)
 
@@ -161,12 +173,16 @@ class Telemetry:
                 metric_attributes[sc.ERROR_TYPE] = error_type
                 raise
             finally:
-                self.operation_duration.record(max(default_timer() - start, 0),
-                                               metric_attributes)
+                self.operation_duration.record(max(default_timer() - start, 0), metric_attributes)
                 self.sent_messages.add(1, metric_attributes)
 
-    def consume(self, wrapped: Callable[..., Any], instance: Any,
-                args: tuple[Any, ...], kwargs: dict[str, Any]) -> Any:
+    def consume(
+        self,
+        wrapped: Callable[..., Any],
+        instance: Any,
+        args: tuple[Any, ...],
+        kwargs: dict[str, Any],
+    ) -> Any:
         start_time = time.time_ns()
         start = default_timer()
         exchange = getattr(instance, "_exchange", "")
@@ -183,8 +199,9 @@ class Telemetry:
             raise
         except Exception as error:
             attributes[sc.ERROR_TYPE] = type(error).__qualname__
-            span = self.tracer.start_span(sc.RECEIVE, kind=SpanKind.CLIENT,
-                                          start_time=start_time, attributes=attributes)
+            span = self.tracer.start_span(
+                sc.RECEIVE, kind=SpanKind.CLIENT, start_time=start_time, attributes=attributes
+            )
             span.record_exception(error)
             span.set_status(Status(StatusCode.ERROR, str(error)))
             span.end()
@@ -203,8 +220,9 @@ class Telemetry:
             sc.MESSAGING_RABBITMQ_ROUTING_KEY: message.topic,
         }
         if message.has_correlation_id():
-            span_attributes[sc.MESSAGING_MESSAGE_CONVERSATION_ID] = \
-                "{:X}".format(message.correlation_id)
+            span_attributes[sc.MESSAGING_MESSAGE_CONVERSATION_ID] = "{:X}".format(
+                message.correlation_id
+            )
         if message.has_body():
             span_attributes[sc.MESSAGING_MESSAGE_BODY_SIZE] = len(message.body)
 
@@ -226,8 +244,13 @@ class Telemetry:
         self.consumed_messages.add(1, attributes)
         return message
 
-    def serve(self, wrapped: Callable[..., Any], instance: Any,
-              args: tuple[Any, ...], kwargs: dict[str, Any]) -> Any:
+    def serve(
+        self,
+        wrapped: Callable[..., Any],
+        instance: Any,
+        args: tuple[Any, ...],
+        kwargs: dict[str, Any],
+    ) -> Any:
         message = args[0] if args else kwargs["message"]
         if instance not in self._providers:
             instance.add_interceptor(self._reply_interceptor)

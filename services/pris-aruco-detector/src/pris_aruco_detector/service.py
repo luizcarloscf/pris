@@ -114,8 +114,7 @@ class ArucoDetectorService(object):
             span.set_attribute("pris.aruco_detector.markers", len(annotations.objects))
             return self.publish(camera_id, frame, annotations)
 
-    def publish(self, camera_id: int, frame: Message,
-                annotations: ObjectAnnotations) -> Message:
+    def publish(self, camera_id: int, frame: Message, annotations: ObjectAnnotations) -> Message:
         """Publish the annotations of a frame, with the frame's capture instant.
 
         Returns:
@@ -143,9 +142,10 @@ class ArucoDetectorService(object):
         return int(match.group(1)) if match else None
 
     @staticmethod
-    def latest_per_camera(messages: Iterable[Message],
-                          frame_topic: str = "CameraGateway.{}.Frame",
-                          ) -> dict[int, tuple[Message, int]]:
+    def latest_per_camera(
+        messages: Iterable[Message],
+        frame_topic: str = "CameraGateway.{}.Frame",
+    ) -> dict[int, tuple[Message, int]]:
         """Keep the newest frame of each camera.
 
         Args:

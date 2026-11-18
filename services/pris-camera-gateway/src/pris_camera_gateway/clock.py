@@ -92,7 +92,7 @@ class ClockMapper(object):
         ys = [host_ns - ref_host_ns for _, host_ns in self._points]
         mean_x = sum(xs) / len(xs)
         mean_y = sum(ys) / len(ys)
-        sxx = sum((x - mean_x)**2 for x in xs)
+        sxx = sum((x - mean_x) ** 2 for x in xs)
         if sxx == 0:
             return 1.0
         sxy = sum((x - mean_x) * (y - mean_y) for x, y in zip(xs, ys))

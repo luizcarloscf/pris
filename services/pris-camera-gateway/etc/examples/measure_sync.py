@@ -7,6 +7,7 @@ captures may be up to half a period apart, so the grouping is meaningless.
 
 E.g.: python etc/examples/measure_sync.py --cameras 0 1 2 3 --frequency 10
 """
+
 import argparse
 import socket
 from typing import Dict, List
@@ -21,13 +22,16 @@ MAX_PENDING_TICKS = 10
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--uri", default="amqp://guest:guest@localhost:5672", help="broker uri")
     parser.add_argument("--cameras", type=int, nargs="+", default=[0, 1, 2, 3], help="camera ids")
-    parser.add_argument("--frequency", type=float, default=10.0,
-                        help="sampling rate of the gateways, in Hz")
-    parser.add_argument("--samples", type=int, default=50,
-                        help="number of complete ticks to measure")
+    parser.add_argument(
+        "--frequency", type=float, default=10.0, help="sampling rate of the gateways, in Hz"
+    )
+    parser.add_argument(
+        "--samples", type=int, default=50, help="number of complete ticks to measure"
+    )
     args = parser.parse_args()
 
     period_ns = round(1e9 / args.frequency)
@@ -65,8 +69,10 @@ def main() -> None:
     # before the latest one
     lag_ms = (samples.max(axis=1, keepdims=True) - samples) / 1e6
     print(f"\nspread between cameras over {len(rows)} ticks:")
-    print(f"  median={np.median(spread_ms):.3f} ms  p95={np.percentile(spread_ms, 95):.3f} ms"
-          f"  max={spread_ms.max():.3f} ms")
+    print(
+        f"  median={np.median(spread_ms):.3f} ms  p95={np.percentile(spread_ms, 95):.3f} ms"
+        f"  max={spread_ms.max():.3f} ms"
+    )
     print("median time before the latest camera:")
     for i, cam in enumerate(args.cameras):
         print(f"  CameraGateway.{cam}: {np.median(lag_ms[:, i]):.3f} ms")

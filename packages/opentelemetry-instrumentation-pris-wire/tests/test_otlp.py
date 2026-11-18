@@ -16,13 +16,19 @@ def test_endpoint_and_default_service_name(monkeypatch):
         def build(endpoint):
             endpoints.append(endpoint)
             return exporter(endpoint=endpoint)
+
         return build
 
     monkeypatch.setattr(otlp, "OTLPSpanExporter", record(otlp.OTLPSpanExporter))
     monkeypatch.setattr(otlp, "OTLPMetricExporter", record(otlp.OTLPMetricExporter))
-    monkeypatch.setattr(otlp, "install",
-                        lambda tracer_provider, meter_provider: installed.update(
-                            tracer=tracer_provider, meter=meter_provider) or (lambda: None))
+    monkeypatch.setattr(
+        otlp,
+        "install",
+        lambda tracer_provider, meter_provider: installed.update(
+            tracer=tracer_provider, meter=meter_provider
+        )
+        or (lambda: None),
+    )
     monkeypatch.delenv("OTEL_SERVICE_NAME", raising=False)
 
     otlp.setup_telemetry("http://collector:4318/", default_service_name="my-service")
@@ -35,14 +41,21 @@ def test_endpoint_and_default_service_name(monkeypatch):
 
 def test_service_name_precedence(monkeypatch):
     names = []
-    monkeypatch.setattr(otlp, "install", lambda tracer_provider, meter_provider: names.append(
-        tracer_provider.resource.attributes["service.name"]) or (lambda: None))
+    monkeypatch.setattr(
+        otlp,
+        "install",
+        lambda tracer_provider, meter_provider: names.append(
+            tracer_provider.resource.attributes["service.name"]
+        )
+        or (lambda: None),
+    )
 
     monkeypatch.delenv("OTEL_SERVICE_NAME", raising=False)
     otlp.setup_telemetry("http://collector:4318")
     monkeypatch.setenv("OTEL_SERVICE_NAME", "from-env")
     otlp.setup_telemetry("http://collector:4318", default_service_name="default")
-    otlp.setup_telemetry("http://collector:4318", service_name="from-options",
-                         default_service_name="default")
+    otlp.setup_telemetry(
+        "http://collector:4318", service_name="from-options", default_service_name="default"
+    )
 
     assert names == ["unknown_service", "from-env", "from-options"]

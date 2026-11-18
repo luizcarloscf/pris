@@ -25,8 +25,9 @@ def load_calibration(path: Path) -> CameraCalibration:
     """
     calibration = load(str(path), CameraCalibration)
     if str(calibration.id) != path.stem:
-        raise ValueError("calibration '{}' has id {}, expected the file name".format(
-            path, calibration.id))
+        raise ValueError(
+            "calibration '{}' has id {}, expected the file name".format(path, calibration.id)
+        )
     return calibration
 
 

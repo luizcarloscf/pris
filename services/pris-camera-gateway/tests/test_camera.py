@@ -31,7 +31,8 @@ def ticking_camera():
 
     node_map.GetNode("GevTimestampTickFrequency").value = 1_000_000_000 // NS_PER_TICK
     node_map.on_execute["TimestampLatch"] = lambda: setattr(
-        node_map.GetNode("TimestampLatchValue"), "value", camera_ns(time.time_ns()) // NS_PER_TICK)
+        node_map.GetNode("TimestampLatchValue"), "value", camera_ns(time.time_ns()) // NS_PER_TICK
+    )
     fake.image_timestamp_ns = lambda: camera_ns(time.time_ns() - 50_000_000)
     return fake
 
@@ -153,6 +154,7 @@ def test_formats_are_encoded_with_opencv(make_camera, image_format):
 
 def test_turbojpeg_encodes_jpeg(make_camera, monkeypatch):
     from pris_msgs.utils import image as image_module
+
     encoder = MagicMock()
     encoder.encode.return_value = b"turbo"
     monkeypatch.setattr(image_module, "_turbojpeg", lambda: encoder)

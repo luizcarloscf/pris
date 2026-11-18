@@ -12,8 +12,9 @@ def server(channel):
     return {"server.address": host, "server.port": int(port)}
 
 
-def test_receive_span_is_child_of_producer_without_current_span(instrument, telemetry, channel,
-                                                                topic):
+def test_receive_span_is_child_of_producer_without_current_span(
+    instrument, telemetry, channel, topic
+):
     instrument()
     message = Message(content=b"frame")
     message.correlation_id = 0x1F
@@ -41,8 +42,9 @@ def test_receive_span_is_child_of_producer_without_current_span(instrument, tele
     assert receive.context.trace_id == publish.context.trace_id
 
 
-def test_receive_span_starts_when_the_message_arrives(instrument, telemetry, channel, topic,
-                                                      monkeypatch):
+def test_receive_span_starts_when_the_message_arrives(
+    instrument, telemetry, channel, topic, monkeypatch
+):
     instrument()
     channel.publish(Message(content=b"frame"), topic=topic)
     drain = channel.connection.drain_events
@@ -143,8 +145,10 @@ def test_receive_metrics(instrument, telemetry, channel, topic):
     metrics = telemetry.metrics()
     (consumed,) = metrics["messaging.client.consumed.messages"]
     assert consumed.value == 2
-    durations = {p.attributes["messaging.operation.type"]: p.count
-                 for p in metrics["messaging.client.operation.duration"]}
+    durations = {
+        p.attributes["messaging.operation.type"]: p.count
+        for p in metrics["messaging.client.operation.duration"]
+    }
     assert durations == {"send": 2, "receive": 2}
 
 

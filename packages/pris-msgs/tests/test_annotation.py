@@ -6,10 +6,26 @@ from pris_msgs.image_pb2 import ObjectAnnotation
 from pris_msgs.utils.annotation import to_annotation, to_array
 
 ORIGINAL = {
-    "UNKNOWN_HUMAN_KEYPOINT": 0, "HEAD": 1, "NOSE": 2, "NECK": 3, "RIGHT_SHOULDER": 4,
-    "RIGHT_ELBOW": 5, "RIGHT_WRIST": 6, "LEFT_SHOULDER": 7, "LEFT_ELBOW": 8, "LEFT_WRIST": 9,
-    "RIGHT_HIP": 10, "RIGHT_KNEE": 11, "RIGHT_ANKLE": 12, "LEFT_HIP": 13, "LEFT_KNEE": 14,
-    "LEFT_ANKLE": 15, "RIGHT_EYE": 16, "LEFT_EYE": 17, "RIGHT_EAR": 18, "LEFT_EAR": 19,
+    "UNKNOWN_HUMAN_KEYPOINT": 0,
+    "HEAD": 1,
+    "NOSE": 2,
+    "NECK": 3,
+    "RIGHT_SHOULDER": 4,
+    "RIGHT_ELBOW": 5,
+    "RIGHT_WRIST": 6,
+    "LEFT_SHOULDER": 7,
+    "LEFT_ELBOW": 8,
+    "LEFT_WRIST": 9,
+    "RIGHT_HIP": 10,
+    "RIGHT_KNEE": 11,
+    "RIGHT_ANKLE": 12,
+    "LEFT_HIP": 13,
+    "LEFT_KNEE": 14,
+    "LEFT_ANKLE": 15,
+    "RIGHT_EYE": 16,
+    "LEFT_EYE": 17,
+    "RIGHT_EAR": 18,
+    "LEFT_EAR": 19,
     "CHEST": 20,
 }
 
@@ -70,18 +86,22 @@ def test_missing_and_low_scored_keypoints_are_left_out():
 
 
 def test_score_and_box():
-    annotation = to_annotation(np.zeros((3, 2)), np.ones(3), IDS, score=0.25,
-                               box=[1.0, 2.0, 3.0, 4.0])
+    annotation = to_annotation(
+        np.zeros((3, 2)), np.ones(3), IDS, score=0.25, box=[1.0, 2.0, 3.0, 4.0]
+    )
     assert annotation.score == 0.25
     assert [(v.x, v.y) for v in annotation.region.vertices] == [(1.0, 2.0), (3.0, 4.0)]
 
 
-@pytest.mark.parametrize("points, scores, keypoints, error", [
-    (np.zeros((3, 4)), np.zeros(3), IDS, ValueError),
-    (np.zeros((3, 2)), np.zeros(2), IDS, ValueError),
-    (np.zeros(3), np.zeros(3), IDS, IndexError),
-    (np.zeros((3, 2)), np.zeros(3), IDS[:2], IndexError),
-])
+@pytest.mark.parametrize(
+    "points, scores, keypoints, error",
+    [
+        (np.zeros((3, 4)), np.zeros(3), IDS, ValueError),
+        (np.zeros((3, 2)), np.zeros(2), IDS, ValueError),
+        (np.zeros(3), np.zeros(3), IDS, IndexError),
+        (np.zeros((3, 2)), np.zeros(3), IDS[:2], IndexError),
+    ],
+)
 def test_to_annotation_shape_errors(points, scores, keypoints, error):
     with pytest.raises(error):
         to_annotation(points, scores, keypoints)

@@ -70,12 +70,18 @@ def test_the_process_span_wraps_the_publish(service, connect, topic, spans):
     handle_until(service, lambda consumers: topic in consumers.info)
 
     spans_by_id = {span.context.span_id: span for span in spans.get_finished_spans()}
-    process = next(span for span in spans_by_id.values()
-                   if span.attributes.get("pris.broker_events.binding.queue") == topic)
+    process = next(
+        span
+        for span in spans_by_id.values()
+        if span.attributes.get("pris.broker_events.binding.queue") == topic
+    )
     assert process.kind == SpanKind.CONSUMER
     assert process.name == "process binding.created"
-    publish = next(span for span in spans_by_id.values()
-                   if span.parent is not None and span.parent.span_id == process.context.span_id)
+    publish = next(
+        span
+        for span in spans_by_id.values()
+        if span.parent is not None and span.parent.span_id == process.context.span_id
+    )
     assert publish.name == "publish BrokerEvents.Consumers"
 
 

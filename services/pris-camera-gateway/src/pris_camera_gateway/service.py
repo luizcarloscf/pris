@@ -34,8 +34,10 @@ class CameraGateway(object):
     settings = {
         "image": {"color_space": "color_space", "format": "format", "region": "region"},
         "sampling": {"frequency": "sampling_rate", "delay": "delay"},
-        "camera": {name: name for name in (
-            "brightness", "gain", "shutter", "white_balance_rv", "white_balance_bu")},
+        "camera": {
+            name: name
+            for name in ("brightness", "gain", "shutter", "white_balance_rv", "white_balance_bu")
+        },
     }
     groups = {
         CameraConfigFields.IMAGE_SETTINGS: "image",
@@ -71,10 +73,12 @@ class CameraGateway(object):
         self.timestamp_topic = f"{prefix}.{options.id}.Timestamp"
         self.provider = ServiceProvider(channel)
         self.provider.add_interceptor(LogInterceptor())
-        self.provider.delegate(f"{prefix}.{options.id}.GetConfig", self.get_config,
-                               FieldSelector, CameraConfig)
-        self.provider.delegate(f"{prefix}.{options.id}.SetConfig", self.set_config,
-                               CameraConfig, Empty)
+        self.provider.delegate(
+            f"{prefix}.{options.id}.GetConfig", self.get_config, FieldSelector, CameraConfig
+        )
+        self.provider.delegate(
+            f"{prefix}.{options.id}.SetConfig", self.set_config, CameraConfig, Empty
+        )
         self.next_sync = time.time() + options.clock_sync_period
 
     def run(self) -> None:

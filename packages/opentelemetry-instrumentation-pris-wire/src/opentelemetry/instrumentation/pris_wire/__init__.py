@@ -52,8 +52,9 @@ class PrisWireInstrumentor(BaseInstrumentor):
         )
         wrap_function_wrapper("pris_wire.core.channel", "Channel.publish", telemetry.publish)
         wrap_function_wrapper("pris_wire.core.channel", "Channel.consume", telemetry.consume)
-        wrap_function_wrapper("pris_wire.rpc.service_provider", "ServiceProvider.serve",
-                              telemetry.serve)
+        wrap_function_wrapper(
+            "pris_wire.rpc.service_provider", "ServiceProvider.serve", telemetry.serve
+        )
 
     def _uninstrument(self, **kwargs: Any) -> None:
         from pris_wire.core.channel import Channel

@@ -17,8 +17,9 @@ class BrokerEvents(object):
 
     log = Logger("BrokerEvents")
 
-    def __init__(self, channel: Channel, topic: str = "BrokerEvents.Consumers",
-                 exchange: str = "pris") -> None:
+    def __init__(
+        self, channel: Channel, topic: str = "BrokerEvents.Consumers", exchange: str = "pris"
+    ) -> None:
         """Subscribe to the binding events on the shared queue `BrokerEvents`.
 
         Subscribe before querying the bindings with `load`, so that no binding falls between them.
@@ -70,17 +71,24 @@ class BrokerEvents(object):
                 return
             topic = message.metadata["routing_key"]
             queue = message.metadata["destination_name"]
-            span.set_attributes({
-                "pris.broker_events.binding.topic": topic,
-                "pris.broker_events.binding.queue": queue,
-            })
-            self.log.info("event='{}' topic='{}' queue='{}'",
-                          (message.topic or "").split(".")[-1], topic, queue)
+            span.set_attributes(
+                {
+                    "pris.broker_events.binding.topic": topic,
+                    "pris.broker_events.binding.queue": queue,
+                }
+            )
+            self.log.info(
+                "event='{}' topic='{}' queue='{}'",
+                (message.topic or "").split(".")[-1],
+                topic,
+                queue,
+            )
             self.channel.publish(Message(content=self.consumers), topic=self.topic)
 
     @staticmethod
-    def consumers_from_bindings(bindings: Iterable[dict[str, Any]],
-                                exchange: str = "pris") -> ConsumerList:
+    def consumers_from_bindings(
+        bindings: Iterable[dict[str, Any]], exchange: str = "pris"
+    ) -> ConsumerList:
         """Build the consumers of each topic from the management API's bindings.
 
         Args:

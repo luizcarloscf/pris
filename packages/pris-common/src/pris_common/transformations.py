@@ -46,8 +46,9 @@ def fetch_transformations(
     pairs = list(dict.fromkeys(pairs))
     request = GetTransformationRequest(ids=[IdPair(source=s, target=t) for s, t in pairs])
     reply = call(channel, request, topic, timeout)
-    found = {(tf.source, tf.target): tf
-             for tf in reply.unpack(GetTransformationReply).transformations}
+    found = {
+        (tf.source, tf.target): tf for tf in reply.unpack(GetTransformationReply).transformations
+    }
     missing = [pair for pair in pairs if pair not in found]
     if missing:
         raise RuntimeError("no transformation for {}".format(missing))

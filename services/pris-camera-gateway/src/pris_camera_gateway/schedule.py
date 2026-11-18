@@ -17,8 +17,9 @@ def normalize_delay(delay_ns: int, period_ns: int, tolerance_ns: int = 1_000) ->
     """
     _check_period(period_ns)
     if delay_ns < 0 or delay_ns > period_ns + tolerance_ns:
-        raise ValueError(f"Delay must be in [0, period], got delay_ns={delay_ns} "
-                         f"and period_ns={period_ns}.")
+        raise ValueError(
+            f"Delay must be in [0, period], got delay_ns={delay_ns} " f"and period_ns={period_ns}."
+        )
     return delay_ns % period_ns
 
 
@@ -42,8 +43,9 @@ def next_tick(now_ns: int, period_ns: int, delay_ns: int) -> int:
     """
     _check_period(period_ns)
     if delay_ns < 0 or delay_ns >= period_ns:
-        raise ValueError(f"Delay must be in [0, period), got delay_ns={delay_ns} "
-                         f"and period_ns={period_ns}.")
+        raise ValueError(
+            f"Delay must be in [0, period), got delay_ns={delay_ns} " f"and period_ns={period_ns}."
+        )
     k = (now_ns - delay_ns) // period_ns + 1
     return k * period_ns + delay_ns
 

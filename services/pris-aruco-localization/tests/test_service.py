@@ -49,9 +49,13 @@ def localization(channel, connect, cameras, topic):
     def make(options=None, calibrated=None):
         options = options or make_options(markers={0: 0.2, 5: 0.2})
         known = calibrated if calibrated is not None else {c.id: c for c in cameras}
-        service = ArucoLocalization(channel, known, options,
-                                    detection_topic=topic + ".{}.Detection",
-                                    transformations_topic=topic + ".FrameTransformations")
+        service = ArucoLocalization(
+            channel,
+            known,
+            options,
+            detection_topic=topic + ".{}.Detection",
+            transformations_topic=topic + ".FrameTransformations",
+        )
 
         def detect(scene, camera, markers, instant):
             message = Message(content=annotations(scene, camera, markers))
@@ -98,7 +102,8 @@ def test_observations_follow_the_detection_resolution(cameras, scene):
     half = cameras[0].scaled(cameras[0].width // 2, cameras[0].height // 2)
 
     (observation,) = ArucoLocalization.observations(
-        {0: annotations(scene, half, {0: pose})}, {0: cameras[0]}, {0: 0.2})[0]
+        {0: annotations(scene, half, {0: pose})}, {0: cameras[0]}, {0: 0.2}
+    )[0]
 
     assert observation.camera.width == half.width
     np.testing.assert_allclose(observation.camera.intrinsic, half.intrinsic)

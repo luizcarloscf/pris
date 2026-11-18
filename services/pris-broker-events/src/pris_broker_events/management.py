@@ -34,8 +34,9 @@ def fetch_bindings(uri: str, timeout: float) -> list[dict[str, Any]]:
         attributes["server.port"] = parsed.port
 
     tracer = trace.get_tracer(__name__)
-    with tracer.start_as_current_span("GET /api/bindings", kind=SpanKind.CLIENT,
-                                      attributes=attributes) as span:
+    with tracer.start_as_current_span(
+        "GET /api/bindings", kind=SpanKind.CLIENT, attributes=attributes
+    ) as span:
         response = requests.get(url, timeout=timeout)
         span.set_attribute("http.response.status_code", response.status_code)
         response.raise_for_status()

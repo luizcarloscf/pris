@@ -41,8 +41,9 @@ def serve(connect):
         channel = connect()
         provider = ServiceProvider(channel)
         provider.delegate(topic, function, request_type, reply_type)
-        thread = threading.Thread(target=lambda: provider.serve(channel.consume(timeout=2.0)),
-                                  daemon=True)
+        thread = threading.Thread(
+            target=lambda: provider.serve(channel.consume(timeout=2.0)), daemon=True
+        )
         thread.start()
         threads.append(thread)
 

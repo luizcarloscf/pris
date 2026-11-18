@@ -49,8 +49,9 @@ def test_rpc_trace(instrument, telemetry, channel):
     assert server.parent.span_id == receive.context.span_id
     assert handler.parent.span_id == server.context.span_id
     assert reply_span.parent.span_id == server.context.span_id
-    assert {s.context.trace_id for s in (request, server, handler, reply_span)} == \
-        {request.context.trace_id}
+    assert {s.context.trace_id for s in (request, server, handler, reply_span)} == {
+        request.context.trace_id
+    }
     assert dict(server.attributes) == {
         "rpc.system.name": "pris_wire",
         "rpc.method": "Echo.Run",
@@ -66,8 +67,9 @@ def test_rpc_trace(instrument, telemetry, channel):
 def test_client_error_status_keeps_span_unset(instrument, telemetry, channel):
     instrument()
     provider = ServiceProvider(channel)
-    provider.delegate("Find.Thing", lambda request, context: Status(StatusCode.NOT_FOUND, "no"),
-                      Struct, Struct)
+    provider.delegate(
+        "Find.Thing", lambda request, context: Status(StatusCode.NOT_FOUND, "no"), Struct, Struct
+    )
 
     reply = call(channel, provider, topic="Find.Thing")
 
@@ -167,7 +169,8 @@ def test_rpc_across_channels(instrument, telemetry, connect, topic):
     provider = ServiceProvider(server_channel)
     provider.delegate(topic, lambda request, context: request, Struct, Struct)
     server = threading.Thread(
-        target=lambda: provider.serve(server_channel.consume(timeout=5.0)), daemon=True)
+        target=lambda: provider.serve(server_channel.consume(timeout=5.0)), daemon=True
+    )
     server.start()
 
     replies = Subscription(client)

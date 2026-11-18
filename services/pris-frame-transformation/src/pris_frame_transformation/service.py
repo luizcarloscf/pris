@@ -65,16 +65,23 @@ class FrameTransformationService(object):
             edges = self.static_edges(calibration)
             for edge in edges:
                 self.graph.set(edge)
-            self.log.info("Camera {}: static edges {}", calibration.id,
-                          [(edge.source, edge.target) for edge in edges])
+            self.log.info(
+                "Camera {}: static edges {}",
+                calibration.id,
+                [(edge.source, edge.target) for edge in edges],
+            )
         self.consumers = Subscription(channel)
         self.consumers.subscribe(consumers_topic)
         self.transformations = Subscription(channel)
         self.transformations.subscribe(transformations_topic)
         self.provider = ServiceProvider(channel)
         self.provider.add_interceptor(LogInterceptor())
-        self.provider.delegate(get_transformation_topic, self.get_transformation,
-                               GetTransformationRequest, GetTransformationReply)
+        self.provider.delegate(
+            get_transformation_topic,
+            self.get_transformation,
+            GetTransformationRequest,
+            GetTransformationReply,
+        )
 
     def run(self) -> None:
         """Run `step` until the process stops."""
@@ -94,8 +101,9 @@ class FrameTransformationService(object):
         deadlines = [d for d in (self.next_expiration(),) if d is not None]
         if timeout is not None:
             deadlines.append(time.time() + timeout)
-        message = (self.channel.consume_until(min(deadlines)) if deadlines
-                   else self.channel.consume())
+        message = (
+            self.channel.consume_until(min(deadlines)) if deadlines else self.channel.consume()
+        )
         messages = [message] + self.channel.consume_ready() if message is not None else []
 
         self.graph.expire(time.time())
@@ -115,14 +123,17 @@ class FrameTransformationService(object):
 
     def next_expiration(self) -> float | None:
         """Return when the next edge expires, or None if none does."""
-        return min((edge.expiration for edge in self.graph.edges.values()
-                    if edge.expiration is not None), default=None)
+        return min(
+            (edge.expiration for edge in self.graph.edges.values() if edge.expiration is not None),
+            default=None,
+        )
 
     def set_consumers(self, message: Message) -> None:
         """Watch the transformation topics of a ConsumerList."""
         info = message.unpack(ConsumerList).info
         added, removed = self.watches.set_consumers(
-            {topic: info[topic].consumers for topic in info})
+            {topic: info[topic].consumers for topic in info}
+        )
         for path in sorted(added):
             self.log.info("Watching {}", topic_for(path, self.watches.prefix))
         for path in sorted(removed):
@@ -148,8 +159,13 @@ class FrameTransformationService(object):
             key = pair(edge.source, edge.target)
             if key not in self.refused:
                 self.refused.add(key)
-                self.log.warn("'{}': edge {} -> {} ignored (static, older, a second parent or "
-                              "a self edge)", message.topic, edge.source, edge.target)
+                self.log.warn(
+                    "'{}': edge {} -> {} ignored (static, older, a second parent or "
+                    "a self edge)",
+                    message.topic,
+                    edge.source,
+                    edge.target,
+                )
         return count
 
     def publish_due(self, links: list[Link], updated: int) -> list[Message]:
@@ -167,7 +183,8 @@ class FrameTransformationService(object):
             return []
         published = []
         with trace.get_tracer(__name__).start_as_current_span(
-                "update", kind=SpanKind.INTERNAL, links=links) as span:
+            "update", kind=SpanKind.INTERNAL, links=links
+        ) as span:
             for path, transformation in due:
                 message = Message(content=self.to_message(transformation))
                 message.topic = topic_for(path, self.watches.prefix)
@@ -175,14 +192,19 @@ class FrameTransformationService(object):
                     message.created_at = transformation.stamp
                 self.channel.publish(message)
                 published.append(message)
-            span.set_attributes({
-                "pris.frame_transformation.edges": updated,
-                "pris.frame_transformation.published": [message.topic for message in published],
-            })
+            span.set_attributes(
+                {
+                    "pris.frame_transformation.edges": updated,
+                    "pris.frame_transformation.published": [
+                        message.topic for message in published
+                    ],
+                }
+            )
         return published
 
-    def get_transformation(self, request: GetTransformationRequest,
-                           context: Context) -> GetTransformationReply | Status:
+    def get_transformation(
+        self, request: GetTransformationRequest, context: Context
+    ) -> GetTransformationReply | Status:
         """Return the transformations of the requested pairs, in their order.
 
         Args:
@@ -197,8 +219,10 @@ class FrameTransformationService(object):
         for ids in request.ids:
             transformation = self.graph.transformation([ids.source, ids.target])
             if transformation is None:
-                return Status(StatusCode.NOT_FOUND, "no transformation from {} to {}".format(
-                    ids.source, ids.target))
+                return Status(
+                    StatusCode.NOT_FOUND,
+                    "no transformation from {} to {}".format(ids.source, ids.target),
+                )
             reply.transformations.append(self.to_message(transformation))
         return reply
 
@@ -228,26 +252,42 @@ class FrameTransformationService(object):
         """
         edges = []
         for transformation in transformations.tfs:
-            expiration = (transformation.expiration.ToNanoseconds() / 1e9
-                          if transformation.HasField("expiration") else None)
+            expiration = (
+                transformation.expiration.ToNanoseconds() / 1e9
+                if transformation.HasField("expiration")
+                else None
+            )
             matrix = FrameTransformationService._matrix(transformation)
-            edges.append(Edge(transformation.source, transformation.target, matrix, stamp=stamp,
-                              expiration=expiration))
+            edges.append(
+                Edge(
+                    transformation.source,
+                    transformation.target,
+                    matrix,
+                    stamp=stamp,
+                    expiration=expiration,
+                )
+            )
         return edges
 
     @staticmethod
     def _matrix(transformation: FrameTransformation) -> npt.NDArray[np.float64]:
         matrix = to_array(transformation.tf).astype(np.float64)
         if matrix.shape != (4, 4):
-            raise ValueError("{} -> {}: a {} matrix, expected 4x4".format(
-                transformation.source, transformation.target, matrix.shape))
+            raise ValueError(
+                "{} -> {}: a {} matrix, expected 4x4".format(
+                    transformation.source, transformation.target, matrix.shape
+                )
+            )
         return matrix
 
     @staticmethod
     def to_message(transformation: Transformation) -> FrameTransformation:
         """Return a transformation as a FrameTransformation, with its expiration if any."""
-        result = FrameTransformation(source=transformation.source, target=transformation.target,
-                                     tf=to_tensor(transformation.matrix))
+        result = FrameTransformation(
+            source=transformation.source,
+            target=transformation.target,
+            tf=to_tensor(transformation.matrix),
+        )
         if transformation.expiration is not None:
             expiration = Timestamp()
             expiration.FromNanoseconds(int(round(transformation.expiration * 1e9)))

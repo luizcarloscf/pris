@@ -67,7 +67,8 @@ class Broker:
 @pytest.fixture
 def service(channel, labvisio, topic):
     return FrameTransformationService(
-        channel, [labvisio[0], labvisio[1]],
+        channel,
+        [labvisio[0], labvisio[1]],
         consumers_topic=topic + ".Consumers",
         transformations_topic=topic + ".FrameTransformations",
         get_transformation_topic=topic + ".GetTransformation",
@@ -99,16 +100,20 @@ def test_watched_paths_are_published_when_they_change(broker, labvisio, spans):
     broker.publish(consumers("FrameTransformation.100.0", "ArUco.0.Detection"), "Consumers")
     assert broker.step() == []
 
-    broker.publish(transformations((100, 1000, pose, time.time() + 10)), "FrameTransformations",
-                   created_at=42.0)
+    broker.publish(
+        transformations((100, 1000, pose, time.time() + 10)),
+        "FrameTransformations",
+        created_at=42.0,
+    )
     (message,) = broker.step()
 
     assert message.topic == "FrameTransformation.100.0"
     assert message.created_at == pytest.approx(42.0)
     tf = message.unpack(FrameTransformation)
     assert (tf.source, tf.target) == (100, 0)
-    np.testing.assert_allclose(to_array(tf.tf), to_array(labvisio[0].extrinsic[0].tf) @ pose,
-                               atol=1e-12)
+    np.testing.assert_allclose(
+        to_array(tf.tf), to_array(labvisio[0].extrinsic[0].tf) @ pose, atol=1e-12
+    )
     assert tf.HasField("expiration")
     assert broker.service.step(timeout=0.2) == []
     (span,) = [s for s in spans.get_finished_spans() if s.name == "update"]
@@ -133,8 +138,9 @@ def test_a_batch_publishes_each_path_once(broker):
     broker.publish(consumers("FrameTransformation.100.1"), "Consumers")
     broker.step()
     for x in (0.1, 0.2, 0.3):
-        broker.publish(transformations((100, 1000, marker_pose(x, 0, 0, 0), None)),
-                       "FrameTransformations")
+        broker.publish(
+            transformations((100, 1000, marker_pose(x, 0, 0, 0), None)), "FrameTransformations"
+        )
 
     (message,) = broker.step()
 
@@ -146,8 +152,9 @@ def test_a_batch_publishes_each_path_once(broker):
 def test_expired_edges_stop_publishing_and_resolving(broker):
     broker.publish(consumers("FrameTransformation.100.0"), "Consumers")
     broker.step()
-    broker.publish(transformations((100, 1000, np.eye(4), time.time() + 0.3)),
-                   "FrameTransformations")
+    broker.publish(
+        transformations((100, 1000, np.eye(4), time.time() + 0.3)), "FrameTransformations"
+    )
     assert len(broker.step()) == 1
     assert broker.service.next_expiration() is not None
 
@@ -188,15 +195,17 @@ def test_bad_transformations_are_ignored(broker):
 
 
 def test_get_transformation(broker, labvisio):
-    broker.publish(transformations((100, 1000, marker_pose(1, 2, 0, 0), None)),
-                   "FrameTransformations")
+    broker.publish(
+        transformations((100, 1000, marker_pose(1, 2, 0, 0), None)), "FrameTransformations"
+    )
     broker.step()
     replies = Subscription(broker.channel)
 
     def call(*pairs):
         request = GetTransformationRequest(ids=[IdPair(source=a, target=b) for a, b in pairs])
-        broker.channel.publish(Message(content=request, reply_to=replies),
-                               topic=broker.topic + ".GetTransformation")
+        broker.channel.publish(
+            Message(content=request, reply_to=replies), topic=broker.topic + ".GetTransformation"
+        )
         broker.step()
         return broker.channel.consume(timeout=1.0)
 

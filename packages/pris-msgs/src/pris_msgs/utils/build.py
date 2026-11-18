@@ -30,8 +30,12 @@ def main(args: Sequence[str]) -> int:
         protoc's exit code, or -1 when no file is given or a file isn't an existing .proto.
     """
     parser = argparse.ArgumentParser(prog="python -m pris_msgs.utils.build")
-    parser.add_argument("--proto_path", action="append", default=[],
-                        help="directory the files are named from (repeatable, default .)")
+    parser.add_argument(
+        "--proto_path",
+        action="append",
+        default=[],
+        help="directory the files are named from (repeatable, default .)",
+    )
     parser.add_argument("--out", default=".", help="where the generated code goes (default .)")
     parser.add_argument("protos", nargs="*")
     options = parser.parse_args(args)
@@ -53,9 +57,12 @@ def main(args: Sequence[str]) -> int:
         paths.append(include)
 
     protoc = shlex.split(os.environ.get("PROTOC", "protoc"))
-    command = (protoc + [f"--proto_path={path}" for path in paths]
-               + [f"--python_out={options.out}", f"--pyi_out={options.out}"]
-               + list(options.protos))
+    command = (
+        protoc
+        + [f"--proto_path={path}" for path in paths]
+        + [f"--python_out={options.out}", f"--pyi_out={options.out}"]
+        + list(options.protos)
+    )
     return subprocess.call(command)
 
 

@@ -34,8 +34,9 @@ def pixels(camera, pose, length=LENGTH):
     """4x2 pixel corners of a marker at `pose`, distortion included."""
     world = transform(pose, marker_corners(length))
     rotation, _ = cv2.Rodrigues(camera.extrinsic[:3, :3])
-    projected, _ = cv2.projectPoints(world, rotation, camera.extrinsic[:3, 3],
-                                     camera.intrinsic, camera.distortion)
+    projected, _ = cv2.projectPoints(
+        world, rotation, camera.extrinsic[:3, 3], camera.intrinsic, camera.distortion
+    )
     return projected.reshape(4, 2)
 
 
@@ -52,8 +53,11 @@ def visible(camera, corners, pose=None, max_angle=np.radians(75)):
     """Corners inside the image and, given the pose, the marker facing the
     camera by less than `max_angle` (beyond that a detector can't decode it,
     and seen edge-on its corners are almost collinear)."""
-    inside = ((corners >= 0).all() and (corners[:, 0] < camera.width).all()
-              and (corners[:, 1] < camera.height).all())
+    inside = (
+        (corners >= 0).all()
+        and (corners[:, 0] < camera.width).all()
+        and (corners[:, 1] < camera.height).all()
+    )
     if pose is None:
         return inside
     to_camera = invert(camera.extrinsic)[:3, 3] - pose[:3, 3]
@@ -70,9 +74,15 @@ def errors(estimate, pose):
 
 def random_poses(count, seed):
     rng = np.random.default_rng(seed)
-    return [marker_pose(*rng.uniform(-1.0, 1.0, 2), rng.uniform(0.0, 1.0),
-                        *rng.uniform(-0.6, 0.6, 2), rng.uniform(-np.pi, np.pi))
-            for _ in range(count)]
+    return [
+        marker_pose(
+            *rng.uniform(-1.0, 1.0, 2),
+            rng.uniform(0.0, 1.0),
+            *rng.uniform(-0.6, 0.6, 2),
+            rng.uniform(-np.pi, np.pi)
+        )
+        for _ in range(count)
+    ]
 
 
 @pytest.fixture(scope="session")
@@ -84,9 +94,16 @@ def cameras():
 @pytest.fixture
 def scene():
     """Helpers to build synthetic observations from the labvisio calibrations."""
-    return SimpleNamespace(load=load, pixels=pixels, marker_pose=marker_pose, visible=visible,
-                           errors=errors, random_poses=random_poses, WORLD=WORLD,
-                           LENGTH=LENGTH)
+    return SimpleNamespace(
+        load=load,
+        pixels=pixels,
+        marker_pose=marker_pose,
+        visible=visible,
+        errors=errors,
+        random_poses=random_poses,
+        WORLD=WORLD,
+        LENGTH=LENGTH,
+    )
 
 
 @pytest.fixture

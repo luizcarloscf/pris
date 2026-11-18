@@ -37,13 +37,16 @@ def test_to_array_errors():
         to_array(Vertex(), dims=4)
 
 
-@pytest.mark.parametrize("value, homogeneous", [
-    ([1], False),
-    ([1, 2, 3, 4], False),
-    ([1, 2], True),
-    (np.zeros((1, 3)), False),
-    (np.zeros(()), False),
-])
+@pytest.mark.parametrize(
+    "value, homogeneous",
+    [
+        ([1], False),
+        ([1, 2, 3, 4], False),
+        ([1, 2], True),
+        (np.zeros((1, 3)), False),
+        (np.zeros(()), False),
+    ],
+)
 def test_to_vertex_errors(value, homogeneous):
     with pytest.raises(ValueError, match="1-D array of 2 or 3 values"):
         to_vertex(value, homogeneous=homogeneous)
