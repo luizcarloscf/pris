@@ -958,7 +958,7 @@ dependencies = [
 [[package]]
 name = "pris-wire"
 version = "1.0.0"
-source = { git = "https://github.com/luizcarloscf/pris?subdirectory=packages%2Fpris-wire&tag=pris-wire-v1.0.0#ae26a37afbe25af49851e1d8be3df2e23e7b0ef6" }
+source = { git = "https://github.com/luizcarloscf/pris?subdirectory=packages%2Fpris-wire&tag=pris-wire-v1.0.0#61c75ac2cec4959d13a763e244cb498c826bc1bd" }
 dependencies = [
     { name = "amqp" },
     { name = "colorlog" },
