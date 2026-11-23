@@ -53,6 +53,9 @@ message DetectorOptions {
   CornerRefinement corner_refinement = 2;
   // threads OpenCV may use (cv2.setNumThreads); 0 keeps OpenCV's default (one per core).
   int32 cpu_threads = 3;
+  // fraction of the bits the dictionary can correct that are corrected (OpenCV's
+  // errorCorrectionRate); DICT_4X4_50 can correct 1 bit: 1.0 corrects it, 0.6 doesn't.
+  double error_correction_rate = 4;
 }
 
 message ArucoDetectorOptions {

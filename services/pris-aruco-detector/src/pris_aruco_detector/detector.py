@@ -30,11 +30,12 @@ class MarkerDetector(object):
         """Create OpenCV's detector.
 
         Args:
-            options: the dictionary and the corner refinement.
+            options: the dictionary, the corner refinement and the error correction rate.
         """
         dictionary = cv2.aruco.getPredefinedDictionary(dictionary_id(options.dictionary))
         parameters = cv2.aruco.DetectorParameters()
         parameters.cornerRefinementMethod = corner_refinement_id(options.corner_refinement)
+        parameters.errorCorrectionRate = options.error_correction_rate
         self._detector = cv2.aruco.ArucoDetector(dictionary, parameters)
 
     def detect(self, image: Image) -> ObjectAnnotations:

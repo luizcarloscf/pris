@@ -42,6 +42,7 @@ The detection's `created_at` is the frame's, which the gateway sets to the insta
 - `dictionary` must match the printed markers: markers of other dictionaries aren't seen at all.
 - `corner_refinement`: `CORNER_REFINE_SUBPIX` gives the most accurate corners, which pose estimation and triangulation need.
 - `cpu_threads`: 1 by default, matching the 1 CPU of each replica on Kubernetes: scale with replicas rather than threads. 0 keeps OpenCV's default, one thread per core (`cv2.setNumThreads(0)` would make OpenCV sequential, so 0 doesn't call it).
+- `error_correction_rate`: OpenCV's `errorCorrectionRate`, 0.6 by default. With `DICT_4X4_50`, which can correct 1 bit, 0.6 corrects none and 1.0 corrects one: a small marker whose black cells bleed toward white is then still decoded, at a slightly higher risk of reading another square as a marker.
 
 `LOG_LEVEL=DEBUG` also logs the dropped frames.
 

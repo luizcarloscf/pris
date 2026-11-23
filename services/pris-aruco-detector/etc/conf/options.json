@@ -9,6 +9,7 @@
   "detector": {
     "dictionary": "DICT_4X4_50",
     "corner_refinement": "CORNER_REFINE_SUBPIX",
-    "cpu_threads": 1
+    "cpu_threads": 1,
+    "error_correction_rate": 0.6
   }
 }

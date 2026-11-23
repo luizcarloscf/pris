@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 import pytest
 from pris_msgs.image_pb2 import Image
 
@@ -46,6 +47,21 @@ def test_other_dictionary_is_ignored(scene):
     assert len(MarkerDetector(DetectorOptions()).detect(image).objects) == 0
     options = DetectorOptions(dictionary=ArucoDictionary.DICT_6X6_50)
     assert [marker.id for marker in MarkerDetector(options).detect(image).objects] == [3]
+
+
+def test_error_correction_rate_decodes_a_flipped_bit():
+    marker = cv2.aruco.generateImageMarker(
+        cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50), 0, MARKER_SIZE
+    )
+    cell = MARKER_SIZE // 6
+    marker[cell : 2 * cell, cell : 2 * cell] = 255 - marker[cell : 2 * cell, cell : 2 * cell]
+    canvas = np.full((480, 640), 255, dtype=np.uint8)
+    canvas[80 : 80 + MARKER_SIZE, 100 : 100 + MARKER_SIZE] = marker
+    image = Image(data=cv2.imencode(".png", canvas)[1].tobytes())
+
+    for rate, expected in ((0.6, []), (1.0, [0])):
+        options = DetectorOptions(error_correction_rate=rate)
+        assert [m.id for m in MarkerDetector(options).detect(image).objects] == expected
 
 
 @pytest.mark.parametrize(

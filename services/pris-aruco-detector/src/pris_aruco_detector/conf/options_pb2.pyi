@@ -74,14 +74,16 @@ class TelemetryOptions(_message.Message):
     def __init__(self, otlp_endpoint: _Optional[str] = ..., service_name: _Optional[str] = ...) -> None: ...
 
 class DetectorOptions(_message.Message):
-    __slots__ = ("dictionary", "corner_refinement", "cpu_threads")
+    __slots__ = ("dictionary", "corner_refinement", "cpu_threads", "error_correction_rate")
     DICTIONARY_FIELD_NUMBER: _ClassVar[int]
     CORNER_REFINEMENT_FIELD_NUMBER: _ClassVar[int]
     CPU_THREADS_FIELD_NUMBER: _ClassVar[int]
+    ERROR_CORRECTION_RATE_FIELD_NUMBER: _ClassVar[int]
     dictionary: ArucoDictionary
     corner_refinement: CornerRefinement
     cpu_threads: int
-    def __init__(self, dictionary: _Optional[_Union[ArucoDictionary, str]] = ..., corner_refinement: _Optional[_Union[CornerRefinement, str]] = ..., cpu_threads: _Optional[int] = ...) -> None: ...
+    error_correction_rate: float
+    def __init__(self, dictionary: _Optional[_Union[ArucoDictionary, str]] = ..., corner_refinement: _Optional[_Union[CornerRefinement, str]] = ..., cpu_threads: _Optional[int] = ..., error_correction_rate: _Optional[float] = ...) -> None: ...
 
 class ArucoDetectorOptions(_message.Message):
     __slots__ = ("broker_uri", "telemetry", "camera_ids", "queue_name", "detector")
