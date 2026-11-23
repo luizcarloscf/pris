@@ -34,7 +34,7 @@ The services' default options already use these names: the broker at `amqp://gue
 
 ## Deploying
 
-The images of the services are built locally and never pushed: build them with `make image SERVICE=<service>` and load them into the cluster (on minikube, `minikube image load luizcarloscf/<service>:<version>`). Their Deployments use `imagePullPolicy: IfNotPresent`, so the loaded image is used. Then apply the common manifests, then the site's:
+The images of the services are built with `make image SERVICE=<service>` and pushed to Docker Hub with `docker push luizcarloscf/<service>:<version>`. Their Deployments use `imagePullPolicy: Always`: each pod pulls its tag again, so `kubectl -n pris rollout restart deploy/<service>` runs the last push, even on a node that cached an older image under the same tag. Then apply the common manifests, then the site's:
 
 ```shell
 kubectl apply -f k8s/common/namespace.yaml

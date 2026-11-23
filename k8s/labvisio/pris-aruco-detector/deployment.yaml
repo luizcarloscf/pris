@@ -16,7 +16,7 @@ spec:
       containers:
         - name: pris-aruco-detector
           image: luizcarloscf/pris-aruco-detector:0.1.0
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           env:
             - name: LOG_LEVEL
               value: INFO

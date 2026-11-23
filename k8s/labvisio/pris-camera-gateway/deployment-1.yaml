@@ -20,7 +20,7 @@ spec:
       containers:
         - name: pris-camera-gateway
           image: luizcarloscf/pris-camera-gateway:0.1.0
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           env:
             - name: LOG_LEVEL
               value: INFO

@@ -16,7 +16,7 @@ spec:
       containers:
         - name: pris-calibration-server
           image: luizcarloscf/pris-calibration-server:0.1.0
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           env:
             - name: LOG_LEVEL
               value: INFO
